@@ -495,6 +495,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
       </button>
     </div>
     <div class="fb">
+      <span class="flbl">APP VERSION</span>
+      <div class="srow"><span class="slbl">Current Build</span><span class="sval" id="db-version">—</span></div>
+    </div>
+    <div class="fb">
       <span class="flbl">CALORIE LOG</span>
       <div class="srow"><span class="slbl">Total Entries</span><span class="sval" id="db-cnt">—</span></div>
       <div class="srow"><span class="slbl">Latest Entry</span><span class="sval" id="db-latest">—</span></div>
@@ -526,6 +530,7 @@ let GOAL = 2400;
 let workbookName = 'architect_data.xlsx';
 let supabaseClient = null;
 let currentUser = null;
+const APP_VERSION = '1.3';
 const SUPABASE_URL = window.ARCHITECT_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = window.ARCHITECT_SUPABASE_ANON_KEY || '';
 const HAS_SUPABASE = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase);
@@ -1259,6 +1264,7 @@ function renderDB(){
       ? 'SUPABASE CONFIGURED - CONNECTION FAILED'
       : 'SUPABASE NOT CONFIGURED - LOCAL DEMO MODE';
   document.getElementById('db-sync-status').textContent = syncMsg;
+  document.getElementById('db-version').textContent = 'v' + APP_VERSION;
   const n=DB.calLog.length;
   document.getElementById('db-cnt').textContent=n+' entries';
   if(n){
