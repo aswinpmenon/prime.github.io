@@ -64,14 +64,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
 .scroll::-webkit-scrollbar{display:none}
 
 /* ── BOTTOM NAV ──────────────────────────────────────── */
-.bnav{position:absolute;left:20px;right:20px;bottom:14px;height:80px;display:flex;align-items:center;gap:12px;padding:10px 14px;z-index:200;border-radius:999px;background:#050505;border:1px solid #0d0d0d;box-shadow:0 18px 38px rgba(0,0,0,.55)}
-.ni{position:relative;display:flex;align-items:center;justify-content:center;gap:14px;width:64px;height:64px;flex:0 0 64px;cursor:pointer;border-radius:999px;border:none;background:#131317;color:#8d8d92;transition:width .28s ease,flex-basis .28s ease,background .28s ease,color .28s ease,transform .18s ease;padding:0 22px;overflow:hidden;-webkit-tap-highlight-color:transparent}
+.bnav{position:absolute;left:20px;right:20px;bottom:14px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;z-index:200;border-radius:999px;background:#050505;border:1px solid #0d0d0d;box-shadow:0 14px 30px rgba(0,0,0,.48)}
+.ni{position:relative;display:flex;align-items:center;justify-content:center;width:48px;height:48px;flex:0 0 48px;cursor:pointer;border-radius:999px;border:none;background:#131317;color:#8d8d92;transition:width .22s ease,background .22s ease,color .22s ease,transform .18s ease;padding:0;overflow:hidden;-webkit-tap-highlight-color:transparent}
 .ni:active{transform:scale(.97)}
-.ni.on{width:calc(100% - 228px);flex:1 1 auto;justify-content:flex-start;background:#141418;color:#fff}
-.ni-icon{width:64px;height:64px;min-width:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;color:#9a9aa0;transition:background .28s ease,color .28s ease}
+.ni.on{width:92px;background:#141418;color:#fff}
+.ni-icon{width:48px;height:48px;min-width:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;color:#9a9aa0;transition:background .22s ease,color .22s ease}
 .ni.on .ni-icon{background:var(--green);color:#050505}
-.ni-label{font-family:'Barlow',sans-serif;font-size:16px;font-weight:500;letter-spacing:.2px;white-space:nowrap;opacity:0;transform:translateX(8px);transition:opacity .2s ease,transform .2s ease}
-.ni.on .ni-label{opacity:1;transform:translateX(0)}
+.ni-label{display:none}
 
 /* ── TYPE ────────────────────────────────────────────── */
 .phase{font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-top:24px;margin-bottom:4px}
@@ -530,7 +529,7 @@ let GOAL = 2400;
 let workbookName = 'architect_data.xlsx';
 let supabaseClient = null;
 let currentUser = null;
-const APP_VERSION = '1.6';
+const APP_VERSION = '1.7';
 const SUPABASE_URL = window.ARCHITECT_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = window.ARCHITECT_SUPABASE_ANON_KEY || '';
 const HAS_SUPABASE = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase);
