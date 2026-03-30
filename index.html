@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Barlow+Condensed:wght@300;400;500;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <script src="./supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -56,24 +57,21 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
 .icon-btn:hover{color:var(--text);background:var(--accent-dim)}
 .back-btn{display:flex;align-items:center;gap:6px;background:none;border:none;color:var(--text2);font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;padding:4px 0;transition:color .2s;-webkit-tap-highlight-color:transparent}
 .back-btn:hover{color:var(--text)}
+.icon-btn i,.back-btn i,.ring-btn i,.mc-icon i,.mc-arr i,.dba i,.sbtn i,.addbtn i,.ddbtn i,.cbtn i,.ni i{line-height:1}
 
 /* ── SCROLL ──────────────────────────────────────────── */
 .scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:0 20px calc(var(--nav-h) + 20px);scrollbar-width:none}
 .scroll::-webkit-scrollbar{display:none}
 
 /* ── BOTTOM NAV ──────────────────────────────────────── */
-.bnav{position:absolute;left:18px;right:18px;bottom:14px;height:84px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 14px;z-index:200;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.08));border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(28px) saturate(170%);-webkit-backdrop-filter:blur(28px) saturate(170%);box-shadow:0 18px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.18),inset 0 -10px 18px rgba(255,255,255,.04);overflow:visible}
-.bnav::before{content:'';position:absolute;inset:6px;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.13),rgba(255,255,255,.03));opacity:.9;pointer-events:none}
-.bnav::after{content:'';position:absolute;left:14px;right:14px;top:8px;height:24px;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.26),rgba(255,255,255,0));opacity:.7;pointer-events:none}
-.ni{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;flex:1;height:62px;cursor:pointer;border-radius:999px;background:transparent;border:none;color:rgba(255,255,255,.58);transition:transform .3s ease,color .3s ease,-webkit-tap-highlight-color 0s;z-index:1;-webkit-tap-highlight-color:transparent}
-.ni::before{content:'';position:absolute;inset:0;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.4),rgba(255,255,255,.12));box-shadow:0 10px 30px rgba(0,0,0,.18),inset 0 2px 0 rgba(255,255,255,.45),inset 0 -6px 12px rgba(255,255,255,.05);opacity:0;transform:scale(.72);transition:opacity .36s cubic-bezier(.22,1,.36,1),transform .36s cubic-bezier(.22,1,.36,1);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%)}
-.ni::after{content:'';position:absolute;left:16px;right:16px;top:6px;height:14px;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,0));opacity:0;transition:opacity .36s ease}
-.ni.on{color:#fff;transform:translateY(-12px)}
-.ni.on::before{opacity:1;transform:scale(1.05)}
-.ni.on::after{opacity:1}
-.ni:active{transform:translateY(-10px) scale(.97)}
-.ni svg{width:22px;height:22px;position:relative;z-index:2}
-.ni-label{position:relative;z-index:2;font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+.bnav{position:absolute;left:20px;right:20px;bottom:14px;height:80px;display:flex;align-items:center;gap:12px;padding:10px 14px;z-index:200;border-radius:999px;background:#050505;border:1px solid #0d0d0d;box-shadow:0 18px 38px rgba(0,0,0,.55)}
+.ni{position:relative;display:flex;align-items:center;justify-content:center;gap:14px;width:64px;height:64px;flex:0 0 64px;cursor:pointer;border-radius:999px;border:none;background:#131317;color:#8d8d92;transition:width .28s ease,flex-basis .28s ease,background .28s ease,color .28s ease,transform .18s ease;padding:0 22px;overflow:hidden;-webkit-tap-highlight-color:transparent}
+.ni:active{transform:scale(.97)}
+.ni.on{width:calc(100% - 228px);flex:1 1 auto;justify-content:flex-start;background:#141418;color:#fff}
+.ni-icon{width:64px;height:64px;min-width:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;color:#9a9aa0;transition:background .28s ease,color .28s ease}
+.ni.on .ni-icon{background:var(--green);color:#050505}
+.ni-label{font-family:'Barlow',sans-serif;font-size:16px;font-weight:500;letter-spacing:.2px;white-space:nowrap;opacity:0;transform:translateX(8px);transition:opacity .2s ease,transform .2s ease}
+.ni.on .ni-label{opacity:1;transform:translateX(0)}
 
 /* ── TYPE ────────────────────────────────────────────── */
 .phase{font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-top:24px;margin-bottom:4px}
@@ -271,10 +269,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
     <div class="brand"><div class="avatar" id="nav-avatar">F</div>FORGE</div>
     <div style="display:flex;align-items:center;gap:8px">
       <button class="icon-btn" onclick="go('database')" title="Data Centre">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v6c0 1.657 4.03 3 9 3s9-1.343 9-3V5"/><path d="M3 11v6c0 1.657 4.03 3 9 3s9-1.343 9-3v-6"/></svg>
+        <i class="fa-solid fa-database"></i>
       </button>
       <button class="icon-btn" onclick="toggleLogoutGate(true)" title="Log Out">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>
+        <i class="fa-solid fa-right-from-bracket"></i>
       </button>
     </div>
   </div>
@@ -291,46 +289,46 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
           <div class="pct-lbl">COMPLETION RATE</div>
         </div>
         <div class="ring-btn" onclick="go('progress-daily')">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <i class="fa-solid fa-bolt"></i>
         </div>
       </div>
       <div class="bar-track"><div class="bar-fill" id="d-bar" style="width:0"></div></div>
     </div>
     <div class="mgrid">
       <div class="mc" onclick="go('record-calorie')">
-        <div class="mc-arr"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></div>
-        <div class="mc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div>
+        <div class="mc-arr"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>
+        <div class="mc-icon"><i class="fa-solid fa-utensils"></i></div>
         <div class="mc-lbl">RECORD<br>CALORIE</div>
       </div>
       <div class="mc" onclick="go('record-workout')">
-        <div class="mc-arr"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></div>
-        <div class="mc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4"/><path d="M6 8v8"/><path d="M9 9h6"/><path d="M15 8v8"/><path d="M18 10v4"/><path d="M21 10v4"/></svg></div>
+        <div class="mc-arr"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>
+        <div class="mc-icon"><i class="fa-solid fa-dumbbell"></i></div>
         <div class="mc-lbl">RECORD<br>WORKOUT</div>
       </div>
     </div>
     <div class="mc fw" onclick="go('progress-weekly')">
-      <div class="mc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+      <div class="mc-icon"><i class="fa-solid fa-chart-line"></i></div>
       <div class="mc-lbl">WEEKLY PROGRESS</div>
       <div class="fw-meta"><div class="fw-val" id="d-wvol">—%</div><div class="fw-lbl">VS LAST WEEK</div></div>
     </div>
     <div class="mc fw" onclick="go('progress-daily')">
-      <div class="mc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+      <div class="mc-icon"><i class="fa-solid fa-calendar-days"></i></div>
       <div class="mc-lbl">DAILY PROGRESS</div>
       <div class="fw-meta"><div class="fw-val" id="d-cal-today">0 KCAL</div><div class="fw-lbl">TODAY</div></div>
     </div>
   </div>
   <div class="bnav">
-    <button class="ni on" style="--gradient-from:#a955ff;--gradient-to:#ea51ff" onclick="go('dashboard')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="ni-label">Home</span></button>
-    <button class="ni" style="--gradient-from:#56CCF2;--gradient-to:#2F80ED" onclick="go('record-calorie')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg><span class="ni-label">Cals</span></button>
-    <button class="ni" style="--gradient-from:#FF9966;--gradient-to:#FF5E62" onclick="go('record-workout')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4"/><path d="M6 8v8"/><path d="M9 9h6"/><path d="M15 8v8"/><path d="M18 10v4"/><path d="M21 10v4"/></svg><span class="ni-label">Gym</span></button>
-    <button class="ni" style="--gradient-from:#80FF72;--gradient-to:#7EE8FA" onclick="go('progress-weekly')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span class="ni-label">Progress</span></button>
+    <button class="ni on" onclick="go('dashboard')"><span class="ni-icon"><i class="fa-solid fa-house"></i></span><span class="ni-label">Home</span></button>
+    <button class="ni" onclick="go('record-calorie')"><span class="ni-icon"><i class="fa-solid fa-fire-flame-curved"></i></span><span class="ni-label">Cals</span></button>
+    <button class="ni" onclick="go('record-workout')"><span class="ni-icon"><i class="fa-solid fa-dumbbell"></i></span><span class="ni-label">Gym</span></button>
+    <button class="ni" onclick="go('progress-weekly')"><span class="ni-icon"><i class="fa-solid fa-chart-line"></i></span><span class="ni-label">Progress</span></button>
   </div>
 </div>
 
 <!-- ════════ SCREEN: RECORD CALORIE ════════ -->
 <div class="screen" id="s-record-calorie">
   <div class="topbar">
-    <button class="back-btn" onclick="back()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>BACK</button>
+    <button class="back-btn" onclick="back()"><i class="fa-solid fa-arrow-left"></i>BACK</button>
     <div class="brand">FORGE</div>
     <div style="width:36px"></div>
   </div>
@@ -341,10 +339,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
     <div class="fb">
       <span class="flbl">SELECT COURSE</span>
       <div class="cgrid">
-        <button class="cbtn sel" id="cb-b" onclick="selCourse(this,'Breakfast')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="cbtn-lbl">BREAKFAST</span></button>
-        <button class="cbtn" id="cb-l" onclick="selCourse(this,'Lunch')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg><span class="cbtn-lbl">LUNCH</span></button>
-        <button class="cbtn" id="cb-d" onclick="selCourse(this,'Dinner')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg><span class="cbtn-lbl">DINNER</span></button>
-        <button class="cbtn" id="cb-s" onclick="selCourse(this,'Snack')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg><span class="cbtn-lbl">SNACK</span></button>
+        <button class="cbtn sel" id="cb-b" onclick="selCourse(this,'Breakfast')"><i class="fa-solid fa-mug-saucer"></i><span class="cbtn-lbl">BREAKFAST</span></button>
+        <button class="cbtn" id="cb-l" onclick="selCourse(this,'Lunch')"><i class="fa-solid fa-sun"></i><span class="cbtn-lbl">LUNCH</span></button>
+        <button class="cbtn" id="cb-d" onclick="selCourse(this,'Dinner')"><i class="fa-solid fa-moon"></i><span class="cbtn-lbl">DINNER</span></button>
+        <button class="cbtn" id="cb-s" onclick="selCourse(this,'Snack')"><i class="fa-solid fa-cookie-bite"></i><span class="cbtn-lbl">SNACK</span></button>
       </div>
     </div>
     <div class="fb">
@@ -364,7 +362,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
       <div class="fb" style="flex:1;margin-bottom:0"><span class="flbl">TIME</span><div style="font-family:'Space Mono',monospace;font-size:13px;color:var(--text)" id="cal-time">—</div></div>
       <div class="fb" style="flex:1;margin-bottom:0"><span class="flbl">DATE</span><div style="font-family:'Space Mono',monospace;font-size:13px;color:var(--text)" id="cal-date">—</div></div>
     </div>
-    <button class="sbtn" onclick="submitCal()">COMMIT RECORD <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+    <button class="sbtn" onclick="submitCal()">COMMIT RECORD <i class="fa-solid fa-arrow-right"></i></button>
     <div class="dotrow" style="margin-top:10px"><div class="dot on"></div><div class="dot"></div><div class="dot"></div></div>
   </div>
 </div>
@@ -372,7 +370,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
 <!-- ════════ SCREEN: RECORD WORKOUT ════════ -->
 <div class="screen" id="s-record-workout">
   <div class="topbar">
-    <button class="back-btn" onclick="back()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>BACK</button>
+    <button class="back-btn" onclick="back()"><i class="fa-solid fa-arrow-left"></i>BACK</button>
     <div class="brand">FORGE</div>
     <div style="width:36px"></div>
   </div>
@@ -384,7 +382,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
     <div class="ddwrap" id="day-dd">
       <button class="ddbtn" onclick="toggleDD()">
         <span class="ddbtn-txt" id="day-txt">SELECT DAY</span>
-        <svg class="chev" id="day-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        <i class="fa-solid fa-chevron-down chev" id="day-chev"></i>
       </button>
       <div class="ddlist" id="day-list">
         <div class="ddi" onclick="selDay('monday')">💪 MONDAY — BACK + BICEPS</div>
@@ -403,7 +401,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
 <!-- ════════ SCREEN: DAILY PROGRESS ════════ -->
 <div class="screen" id="s-progress-daily">
   <div class="topbar">
-    <button class="back-btn" onclick="back()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>BACK</button>
+    <button class="back-btn" onclick="back()"><i class="fa-solid fa-arrow-left"></i>BACK</button>
     <div class="brand">FORGE</div>
     <div style="width:36px"></div>
   </div>
@@ -444,7 +442,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
 <!-- ════════ SCREEN: WEEKLY PROGRESS ════════ -->
 <div class="screen" id="s-progress-weekly">
   <div class="topbar">
-    <button class="back-btn" onclick="back()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>BACK</button>
+    <button class="back-btn" onclick="back()"><i class="fa-solid fa-arrow-left"></i>BACK</button>
     <div class="brand">FORGE</div>
     <div style="width:36px"></div>
   </div>
@@ -477,7 +475,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
 <!-- ════════ SCREEN: DATABASE ════════ -->
 <div class="screen" id="s-database">
   <div class="topbar">
-    <button class="back-btn" onclick="back()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>BACK</button>
+    <button class="back-btn" onclick="back()"><i class="fa-solid fa-arrow-left"></i>BACK</button>
     <div class="brand">FORGE</div>
     <div style="width:36px"></div>
   </div>
@@ -487,12 +485,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
     <div class="db-banner"><div class="db-dot"></div><div class="db-txt" id="db-sync-status">SUPABASE BACKEND OFFLINE - LOCAL MODE</div></div>
     <div class="db-acts">
       <label class="dba pri" style="cursor:pointer">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <i class="fa-solid fa-file-import"></i>
         IMPORT XLSX
         <input id="xlsx-import" type="file" accept=".xlsx,.xls" style="display:none" onchange="importXLSX(this)">
       </label>
       <button class="dba" onclick="exportXLSX()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <i class="fa-solid fa-file-export"></i>
         EXPORT XLSX
       </button>
     </div>
@@ -532,7 +530,7 @@ let GOAL = 2400;
 let workbookName = 'architect_data.xlsx';
 let supabaseClient = null;
 let currentUser = null;
-const APP_VERSION = '1.5';
+const APP_VERSION = '1.6';
 const SUPABASE_URL = window.ARCHITECT_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = window.ARCHITECT_SUPABASE_ANON_KEY || '';
 const HAS_SUPABASE = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase);
@@ -1106,7 +1104,7 @@ function renderWK(d){
   }
   let h='';
   plan.ex.forEach((e,i)=>{ aSets[i]=[{lbs:'',reps:''}]; h+=buildEC(e,i); });
-  h+=`<button class="sbtn" style="margin-top:6px" onclick="completeSess()">Complete Session <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></button>
+  h+=`<button class="sbtn" style="margin-top:6px" onclick="completeSess()">Complete Session <i class="fa-solid fa-check"></i></button>
       <button class="dbtn" onclick="discardSess()">DISCARD WORKOUT</button>`;
   el.innerHTML=h;
 }
@@ -1121,7 +1119,7 @@ function buildEC(e,i){
     <div class="exhdr"><div class="exname">${e.n}</div><span class="extag">${e.t}</span></div>
     <div class="sethdr"><div>SET</div><div>PREV</div><div>LBS</div><div>REPS</div></div>
     ${rows}
-    <button class="addbtn" onclick="addS(${i},'${e.r}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>ADD SET</button>
+    <button class="addbtn" onclick="addS(${i},'${e.r}')"><i class="fa-solid fa-plus"></i>ADD SET</button>
   </div>`;
 }
 function ss(ei,si,f,v){ if(!aSets[ei]) aSets[ei]=[]; if(!aSets[ei][si]) aSets[ei][si]={lbs:'',reps:''}; aSets[ei][si][f]=v; }
