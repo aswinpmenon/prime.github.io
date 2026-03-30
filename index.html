@@ -10,6 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <script src="./supabase-config.js"></script>
+<script src="./ai-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -203,6 +204,16 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
 .dba{flex:1;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);cursor:pointer;text-align:center;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;-webkit-tap-highlight-color:transparent}
 .dba:hover{border-color:var(--border2);color:var(--text)}
 .dba.pri{background:var(--surface2);color:var(--accent);border-color:var(--border2)}
+.ai-btn{margin-bottom:10px}
+.ai-preview{width:100%;height:120px;object-fit:cover;border-radius:10px;border:1px solid var(--border);margin-bottom:12px;background:var(--surface2);display:none}
+.ai-preview.show{display:block}
+.ai-list{display:flex;flex-direction:column;gap:8px}
+.ai-item{display:grid;grid-template-columns:1fr 74px;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.ai-item:last-child{border-bottom:none}
+.ai-name{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.ai-meta{font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);margin-top:2px}
+.ai-total{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.ai-total span:first-child{font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--text2)}
 
 /* ── DOTS ────────────────────────────────────────────── */
 .dotrow{display:flex;justify-content:center;gap:6px;padding:10px 0}
@@ -349,6 +360,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
     <div style="display:flex;gap:8px;margin-bottom:10px">
       <div class="fb" style="flex:1;margin-bottom:0;padding:12px"><span class="flbl">TIME</span><div style="font-family:'Space Mono',monospace;font-size:12px;color:var(--text)" id="cal-time">—</div></div>
       <div class="fb" style="flex:1;margin-bottom:0;padding:12px"><span class="flbl">DATE</span><div style="font-family:'Space Mono',monospace;font-size:12px;color:var(--text)" id="cal-date">—</div></div>
+    </div>
+    <div class="fb ai-btn" style="padding:14px">
+      <span class="flbl">AI FOOD ESTIMATE</span>
+      <input id="foodImageInput" type="file" accept="image/*" capture="environment" style="display:none" onchange="analyzeFoodImage(this)">
+      <button class="sbtn" style="padding:14px;margin-bottom:10px" onclick="document.getElementById('foodImageInput').click()">ANALYZE FOOD IMAGE <i class="fa-solid fa-camera"></i></button>
+      <img id="foodPreview" class="ai-preview" alt="Food preview">
+      <div id="aiFoodResults" style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text3)">Upload or capture a food image to estimate calories.</div>
     </div>
     <button class="sbtn" style="padding:15px" onclick="submitCal()">COMMIT RECORD <i class="fa-solid fa-arrow-right"></i></button>
   </div>
@@ -524,7 +542,10 @@ let GOAL = 2400;
 let workbookName = 'architect_data.xlsx';
 let supabaseClient = null;
 let currentUser = null;
-const APP_VERSION = '1.10';
+let aiFoodItems = [];
+let aiFoodPreviewUrl = '';
+const APP_VERSION = '2.1';
+const FOOD_AI_API_URL = window.FORGE_AI_API_URL || 'http://127.0.0.1:5001/api/food/analyze';
 const SUPABASE_URL = window.ARCHITECT_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = window.ARCHITECT_SUPABASE_ANON_KEY || '';
 const HAS_SUPABASE = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase);
@@ -996,6 +1017,99 @@ function updCalDisp(){
 function updateCalClock(){
   document.getElementById('cal-time').textContent=nowTime();
   document.getElementById('cal-date').textContent=TODAY;
+}
+function renderAiFoodResults(){
+  const host=document.getElementById('aiFoodResults');
+  if(!aiFoodItems.length){
+    host.innerHTML='Upload or capture a food image to estimate calories.';
+    return;
+  }
+  const total=aiFoodItems.reduce((sum,item)=>sum+(Number(item.calories)||0),0);
+  host.innerHTML=`
+    <div class="ai-list">
+      ${aiFoodItems.map((item,idx)=>`
+        <div class="ai-item">
+          <div>
+            <div class="ai-name">${item.name}</div>
+            <div class="ai-meta">CONF ${Math.round((item.confidence||0)*100)}%</div>
+          </div>
+          <input class="si" type="number" value="${item.calories}" oninput="updateAiFoodCalories(${idx},this.value)">
+        </div>
+      `).join('')}
+    </div>
+    <div class="ai-total">
+      <span>Total Estimated</span>
+      <span class="sval" id="aiFoodTotal">${fmt(total)} kcal</span>
+    </div>
+    <button class="sbtn" style="padding:14px;margin-top:12px" onclick="confirmAiCalories()">CONFIRM AI CALORIES <i class="fa-solid fa-check"></i></button>
+  `;
+}
+function updateAiFoodCalories(index,value){
+  if(!aiFoodItems[index]) return;
+  aiFoodItems[index].calories=Math.max(0,parseInt(value||'0',10)||0);
+  const total=aiFoodItems.reduce((sum,item)=>sum+(Number(item.calories)||0),0);
+  const totalEl=document.getElementById('aiFoodTotal');
+  if(totalEl) totalEl.textContent=`${fmt(total)} kcal`;
+}
+async function analyzeFoodImage(input){
+  const file=input.files?.[0];
+  if(!file) return;
+  if(aiFoodPreviewUrl) URL.revokeObjectURL(aiFoodPreviewUrl);
+  aiFoodPreviewUrl=URL.createObjectURL(file);
+  const preview=document.getElementById('foodPreview');
+  preview.src=aiFoodPreviewUrl;
+  preview.classList.add('show');
+  document.getElementById('aiFoodResults').textContent='Analyzing image…';
+  const formData=new FormData();
+  formData.append('image',file);
+  try{
+    const res=await fetch(FOOD_AI_API_URL,{method:'POST',body:formData});
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error||'analysis failed');
+    aiFoodItems=(data.items||[]).map(item=>({
+      name:item.name,
+      calories:item.calories,
+      confidence:item.confidence
+    }));
+    if(!aiFoodItems.length){
+      document.getElementById('aiFoodResults').textContent='No supported food items detected above 0.5 confidence.';
+      return;
+    }
+    renderAiFoodResults();
+    toast('AI ESTIMATE READY',true);
+  }catch(e){
+    aiFoodItems=[];
+    document.getElementById('aiFoodResults').textContent='AI analysis failed. Check the Flask backend and try again.';
+    toast('AI ANALYSIS FAILED',false,true);
+  }finally{
+    input.value='';
+  }
+}
+async function confirmAiCalories(){
+  if(!aiFoodItems.length){ toast('NO AI ITEMS',false,true); return; }
+  const total=aiFoodItems.reduce((sum,item)=>sum+(Number(item.calories)||0),0);
+  if(total<=0){ toast('EDIT CALORIES FIRST',false,true); return; }
+  const id=DB.calLog.length?Math.max(...DB.calLog.map(r=>r.ID||0))+1:1;
+  const notes='AI_ITEMS:'+JSON.stringify(aiFoodItems);
+  const row={ID:id,Date:TODAY,Day:dow(TODAY),Course:selCourseVal,Calories_kcal:total,Timestamp:nowTime(),Location:'AI Scan',Notes:notes};
+  try{
+    await insertCalorieRow(row);
+  }catch(e){
+    toast('SAVE FAILED',false,true);
+    return;
+  }
+  DB.calLog.push(row);
+  syncWB();
+  calVal=String(total);
+  updCalDisp();
+  aiFoodItems=[];
+  document.getElementById('foodPreview').classList.remove('show');
+  document.getElementById('foodPreview').src='';
+  if(aiFoodPreviewUrl){ URL.revokeObjectURL(aiFoodPreviewUrl); aiFoodPreviewUrl=''; }
+  renderAiFoodResults();
+  toast('AI CALORIES SAVED',true);
+  renderDash();
+  renderDaily();
 }
 async function submitCal(){
   if(!calVal||parseInt(calVal)===0){ toast('ENTER A VALUE',false,true); return; }
