@@ -468,6 +468,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
       <span class="flbl">METRICS SUMMARY</span>
       <div class="srow"><span class="slbl">Calories Today</span><span class="sval" id="dp-m-cals">—</span></div>
       <div class="srow"><span class="slbl">Daily Goal</span><span class="sval" id="dp-m-goal">2,400 kcal</span></div>
+      <div class="srow"><span class="slbl">Burned Today</span><span class="sval" id="dp-m-burn">—</span></div>
+      <div class="srow"><span class="slbl">Net Calories</span><span class="sval" id="dp-m-net">—</span></div>
       <div class="srow"><span class="slbl">Remaining</span><span class="sval" id="dp-m-rem">—</span></div>
       <div class="srow"><span class="slbl">Workout Status</span><span id="dp-m-wk"><span class="tag">NO DATA</span></span></div>
       <div class="srow"><span class="slbl">Today</span><span class="sval" id="dp-m-day">—</span></div>
@@ -557,6 +559,15 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
       <div class="srow"><span class="slbl">Unique Sessions</span><span class="sval" id="db-wsess">—</span></div>
       <div class="srow"><span class="slbl">Latest Session</span><span class="sval" id="db-wlat">—</span></div>
     </div>
+    <div class="fb">
+      <span class="flbl">BURNED CALORIES</span>
+      <div class="srow"><span class="slbl">Today</span><span class="sval" id="db-burn-today">—</span></div>
+      <div class="srow"><span class="slbl">Days Logged</span><span class="sval" id="db-burn-days">—</span></div>
+    </div>
+    <button class="dba pri" onclick="showBurnSyncSetup()" style="width:100%;margin-bottom:12px">
+      <i class="fa-solid fa-heart-pulse"></i>
+      APPLE HEALTH AUTO SYNC
+    </button>
     <button class="dbtn" onclick="clearProgress()">DELETE ALL USER DATA</button>
     <div class="fb">
       <span class="flbl">LAST 10 CALORIE ENTRIES</span>
@@ -636,7 +647,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
 //  STATE
 // ══════════════════════════════════════════════
 let WB = null;
-let DB = { calLog:[], workoutLog:[] };
+let DB = { calLog:[], workoutLog:[], burnedLog:{} };
 let GOAL = 2400;
 let workbookName = 'architect_data.xlsx';
 let supabaseClient = null;
@@ -652,8 +663,10 @@ let voiceListening = false;
 let voiceParsedItem = '';
 let voiceParsedCalories = 0;
 let voiceParsedCourse = 'Breakfast';
-const APP_VERSION = '2.8.1';
+let lastRemoteSyncAt = 0;
+const APP_VERSION = '2.9';
 const FOOD_AI_API_URL = window.FORGE_AI_API_URL || 'http://127.0.0.1:5001/api/food/analyze';
+const BURN_SYNC_API_URL = window.FORGE_BURN_SYNC_URL || FOOD_AI_API_URL.replace(/\/api\/food\/analyze\/?$/,'/api/health/burned-sync');
 const SUPABASE_URL = window.ARCHITECT_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = window.ARCHITECT_SUPABASE_ANON_KEY || '';
 const HAS_SUPABASE = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase);
@@ -855,6 +868,11 @@ function parseWB(wb){
   DB.workoutLog = wb.Sheets['WorkoutLog']  ? XLSX.utils.sheet_to_json(wb.Sheets['WorkoutLog'])  : [];
   const config = wb.Sheets['Config'] ? XLSX.utils.sheet_to_json(wb.Sheets['Config']) : [];
   const goalRow = config.find(r=>String(r.Setting||'').trim()==='Calorie_Goal_Daily');
+  DB.burnedLog = Object.fromEntries(
+    config
+      .filter(r=>String(r.Setting||'').startsWith('Burned_Calories_'))
+      .map(r=>[String(r.Setting).slice('Burned_Calories_'.length), Number(r.Value)||0])
+  );
   GOAL = Number(goalRow?.Value) || 2400;
 }
 
@@ -886,6 +904,9 @@ function buildDailySummaryRows(){
       Number(completion.toFixed(6))
     ];
   });
+}
+function getBurnedCalories(date=TODAY){
+  return Number(DB.burnedLog?.[date]) || 0;
 }
 
 function buildWeeklySummaryRows(){
@@ -939,6 +960,8 @@ function syncWB({skipLinkedSave=false}={}){
   WB.Sheets['CalorieLog']=XLSX.utils.aoa_to_sheet([cH,...DB.calLog.map(r=>[r.ID,r.Date,r.Day,r.Course,r.Calories_kcal,r.Timestamp,r.Location||'Home Office',r.Notes||''])]);
   const wH=['ID','Date','Day','Session_ID','Exercise','Muscle_Group','Set_No','Weight_lbs','Reps','Notes'];
   WB.Sheets['WorkoutLog']=XLSX.utils.aoa_to_sheet([wH,...DB.workoutLog.map(r=>[r.ID,r.Date,r.Day,r.Session_ID,r.Exercise,r.Muscle_Group,r.Set_No,r.Weight_lbs,r.Reps,r.Notes||''])]);
+  const cfgRows=[['Setting','Value'],['Calorie_Goal_Daily',GOAL],...Object.entries(DB.burnedLog||{}).sort((a,b)=>a[0].localeCompare(b[0])).map(([date,value])=>[`Burned_Calories_${date}`,value])];
+  WB.Sheets['Config']=XLSX.utils.aoa_to_sheet(cfgRows);
   const dH=['Date','Day','Total_Calories','Calorie_Goal','Calories_Remaining','Workout_Done','Sessions','Completion_Pct'];
   WB.Sheets['DailySummary']=XLSX.utils.aoa_to_sheet([dH,...buildDailySummaryRows()]);
   const wsH=['Week_Start','Week_End','Total_Calories','Avg_Daily_Calories','Calorie_Goal_Weekly','Training_Days','Rest_Days','Total_Sets','Avg_Weight_lbs','Notes'];
@@ -961,7 +984,7 @@ async function initSupabase(){
       toggleAuthGate(false);
       loadFromSupabase().catch(()=>toast('LOAD FAILED',false,true));
     }else{
-      DB = {calLog:[], workoutLog:[]};
+      DB = {calLog:[], workoutLog:[], burnedLog:{}};
       WB = buildStarterWB();
       parseWB(WB);
       renderDash();
@@ -1012,6 +1035,11 @@ async function loadFromSupabase(){
     Muscle_Group:r.muscle_group, Set_No:r.set_no, Weight_lbs:r.weight_lbs, Reps:r.reps, Notes:r.notes || ''
   }));
   const goalRow = (configRows || []).find(r=>String(r.setting||'').trim()==='Calorie_Goal_Daily');
+  DB.burnedLog = Object.fromEntries(
+    (configRows || [])
+      .filter(r=>String(r.setting||'').startsWith('Burned_Calories_'))
+      .map(r=>[String(r.setting).slice('Burned_Calories_'.length), Number(r.value)||0])
+  );
   GOAL = Number(goalRow?.value) || GOAL;
   if(!WB) WB = buildStarterWB();
   syncWB();
@@ -1041,7 +1069,10 @@ async function seedSupabaseFromDB(){
     })));
     if(error) throw error;
   }
-  await supabaseClient.from('app_config').upsert([{owner_id:currentUser.id, setting:'Calorie_Goal_Daily', value:String(GOAL)}],{onConflict:'owner_id,setting'});
+  await supabaseClient.from('app_config').upsert(
+    [{owner_id:currentUser.id, setting:'Calorie_Goal_Daily', value:String(GOAL)}, ...Object.entries(DB.burnedLog||{}).map(([date,value])=>({owner_id:currentUser.id, setting:`Burned_Calories_${date}`, value:String(value)}))],
+    {onConflict:'owner_id,setting'}
+  );
   return true;
 }
 async function insertCalorieRow(row){
@@ -1060,20 +1091,95 @@ async function insertWorkoutRows(rows){
   })));
   if(error) throw error;
 }
+async function saveBurnedCalories(date, calories){
+  const safeDate=String(date||TODAY);
+  const safeCalories=Math.max(0, Math.round(Number(calories)||0));
+  DB.burnedLog[safeDate]=safeCalories;
+  if(supabaseClient && currentUser){
+    const {error}=await supabaseClient.from('app_config').upsert(
+      {owner_id:currentUser.id, setting:`Burned_Calories_${safeDate}`, value:String(safeCalories)},
+      {onConflict:'owner_id,setting'}
+    );
+    if(error) throw error;
+  }
+  syncWB();
+}
+function extractCaloriesFromShortcutText(text=''){
+  const source=String(text||'').replace(/,/g,' ');
+  const kcalMatch=source.match(/(\d{1,5})(?:\s*(?:kcal|calories?|cals?))\b/i);
+  if(kcalMatch) return Math.max(0, parseInt(kcalMatch[1],10) || 0);
+  const plainMatch=source.match(/\b(\d{2,5})\b/);
+  return plainMatch ? Math.max(0, parseInt(plainMatch[1],10) || 0) : 0;
+}
+function getBurnSyncSetupText(){
+  if(!currentUser) return '';
+  return [
+    'APPLE HEALTH AUTO SYNC',
+    '',
+    'Shortcut URL:',
+    BURN_SYNC_API_URL,
+    '',
+    'Use this JSON body in "Get Contents of URL":',
+    JSON.stringify({
+      secret: 'YOUR_FORGE_SHORTCUT_SECRET',
+      user_id: currentUser.id,
+      date: TODAY,
+      burned_calories: 650,
+      source: 'apple_shortcuts'
+    }, null, 2),
+    '',
+    'Replace burned_calories with the Active Energy value from Apple Health.',
+    'Replace secret with the same FORGE_SHORTCUT_SECRET value you set on the backend.'
+  ].join('\n');
+}
+async function showBurnSyncSetup(){
+  if(!currentUser){
+    toast('SIGN IN TO CONFIGURE SYNC',false,true);
+    return;
+  }
+  const text=getBurnSyncSetupText();
+  try{
+    if(navigator.clipboard?.writeText){
+      await navigator.clipboard.writeText(text);
+      toast('SYNC SETUP COPIED',true);
+    }
+  }catch(e){}
+  window.prompt('Copy this Apple Health sync setup into your Shortcut:', text);
+}
+async function refreshRemoteData({silent=true, force=false}={}){
+  if(!supabaseClient || !currentUser) return false;
+  const now=Date.now();
+  if(!force && now-lastRemoteSyncAt<2000) return false;
+  lastRemoteSyncAt=now;
+  try{
+    await loadFromSupabase();
+    if(!silent) toast('SYNC REFRESHED',true);
+    return true;
+  }catch(e){
+    if(!silent) toast('SYNC REFRESH FAILED',false,true);
+    return false;
+  }
+}
 async function clearProgress(){
   if(!window.confirm('Delete all saved progress? This will remove calorie and workout records from the database.')) return;
   try{
     if(HAS_SUPABASE && !supabaseClient) throw new Error('Supabase not connected');
     if(supabaseClient){
-      const [{error: calErr}, {error: wkErr}, {error: cfgErr}] = await Promise.all([
+      const settingsToDelete=['Calorie_Goal_Daily', ...Object.keys(DB.burnedLog||{}).map(date=>`Burned_Calories_${date}`)];
+      const deleteConfigPromises=settingsToDelete.length
+        ? settingsToDelete.map(setting=>supabaseClient.from('app_config').delete().eq('setting',setting))
+        : [];
+      const [{error: calErr}, {error: wkErr}, ...cfgResults] = await Promise.all([
         supabaseClient.from('calorie_log').delete().gte('id',0),
         supabaseClient.from('workout_log').delete().gte('id',0),
-        supabaseClient.from('app_config').delete().eq('setting','Calorie_Goal_Daily')
+        ...deleteConfigPromises
       ]);
+      const cfgErr=(cfgResults.find(result=>result?.error)||{}).error;
       if(calErr || wkErr || cfgErr) throw (calErr || wkErr || cfgErr);
     }
     DB.calLog = [];
     DB.workoutLog = [];
+    DB.burnedLog = {};
     GOAL = 2400;
     aDay = null;
     aSets = {};
@@ -1096,14 +1202,16 @@ async function clearDailyData(){
   try{
     if(HAS_SUPABASE && !supabaseClient) throw new Error('Supabase not connected');
     if(supabaseClient){
-      const [{error: calErr}, {error: wkErr}] = await Promise.all([
+      const [{error: calErr}, {error: wkErr}, {error: burnErr}] = await Promise.all([
         supabaseClient.from('calorie_log').delete().eq('date',TODAY),
-        supabaseClient.from('workout_log').delete().eq('date',TODAY)
+        supabaseClient.from('workout_log').delete().eq('date',TODAY),
+        supabaseClient.from('app_config').delete().eq('setting',`Burned_Calories_${TODAY}`)
       ]);
-      if(calErr || wkErr) throw (calErr || wkErr);
+      if(calErr || wkErr || burnErr) throw (calErr || wkErr || burnErr);
     }
     DB.calLog = DB.calLog.filter(r=>r.Date!==TODAY);
     DB.workoutLog = DB.workoutLog.filter(r=>r.Date!==TODAY);
+    delete DB.burnedLog[TODAY];
     syncWB();
     renderDash();
     renderDaily();
@@ -1851,6 +1959,7 @@ function renderDash(){
 
 function renderDaily(){
   const c=todayCals(), p=Math.min(Math.round(c/GOAL*100),100), rem=GOAL-c;
+  const burned=getBurnedCalories(TODAY), net=c-burned;
   const wks=DB.workoutLog.filter(r=>r.Date===TODAY).length;
   document.getElementById('dp-pct').textContent=p+'%';
   document.getElementById('dp-bar').style.width=p+'%';
@@ -1860,6 +1969,9 @@ function renderDaily(){
   document.getElementById('dp-date').textContent=TODAY+' · '+dow(TODAY).toUpperCase();
   document.getElementById('dp-m-cals').textContent=fmt(c)+' kcal';
   document.getElementById('dp-m-goal').textContent=fmt(GOAL)+' kcal';
+  document.getElementById('dp-m-burn').textContent=fmt(burned)+' kcal';
+  document.getElementById('dp-m-net').textContent=(net>=0?'+':'')+fmt(net)+' kcal';
+  document.getElementById('dp-m-net').style.color=net<=GOAL?'var(--green)':'var(--red)';
   document.getElementById('dp-m-rem').textContent=(rem>=0?'+':'')+fmt(rem)+' kcal';
   document.getElementById('dp-m-rem').style.color=rem>=0?'var(--green)':'var(--red)';
   document.getElementById('dp-m-day').textContent=dow(TODAY).toUpperCase();
@@ -1915,6 +2027,8 @@ function renderDB(){
   document.getElementById('db-sync-status').textContent = syncMsg;
   document.getElementById('db-version').textContent = 'v' + APP_VERSION;
   const n=DB.calLog.length;
+  document.getElementById('db-burn-today').textContent=fmt(getBurnedCalories(TODAY))+' kcal';
+  document.getElementById('db-burn-days').textContent=Object.keys(DB.burnedLog||{}).length;
   document.getElementById('db-cnt').textContent=n+' entries';
   if(n){
     const lat=DB.calLog[n-1];
@@ -1956,6 +2070,12 @@ document.addEventListener('touchend',event=>{
   if(now-lastTapTime<300) event.preventDefault();
   lastTapTime=now;
 },{passive:false});
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden) refreshRemoteData({silent:true});
+});
+window.addEventListener('focus',()=>{
+  refreshRemoteData({silent:true});
+});
 
 // ══════════════════════════════════════════════
 //  INIT
