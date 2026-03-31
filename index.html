@@ -224,6 +224,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
 .minfo{display:flex;flex-direction:column;gap:2px}
 .mname{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text)}
 .mtime{font-family:'Space Mono',monospace;font-size:9px;color:var(--text3)}
+.msub{font-family:'Space Mono',monospace;font-size:9px;color:var(--text3)}
 .mcals{font-family:'Space Mono',monospace;font-size:13px;color:var(--green)}
 
 /* ── DATABASE SCREEN ─────────────────────────────────── */
@@ -457,18 +458,21 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
     <div class="fb">
       <span class="flbl">METRICS SUMMARY</span>
       <div class="srow"><span class="slbl">Calories Today</span><span class="sval" id="dp-m-cals">—</span></div>
-      <div class="srow"><span class="slbl">Daily Goal</span><span class="sval">2,400 kcal</span></div>
+      <div class="srow"><span class="slbl">Daily Goal</span><span class="sval" id="dp-m-goal">2,400 kcal</span></div>
       <div class="srow"><span class="slbl">Remaining</span><span class="sval" id="dp-m-rem">—</span></div>
       <div class="srow"><span class="slbl">Workout Status</span><span id="dp-m-wk"><span class="tag">NO DATA</span></span></div>
       <div class="srow"><span class="slbl">Today</span><span class="sval" id="dp-m-day">—</span></div>
     </div>
     <div class="fb">
-      <span class="flbl">MEALS TODAY</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px">
+        <span class="flbl" style="margin-bottom:0">MEALS TODAY</span>
+        <button class="icon-btn" onclick="clearTodayMeals()" title="Delete today's meals"><i class="fa-solid fa-trash"></i></button>
+      </div>
       <div id="dp-meals">
         <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);padding:10px 0">No meals logged today.</div>
       </div>
     </div>
-    <button class="dbtn" onclick="clearProgress()">DELETE ALL PROGRESS</button>
+    <button class="dbtn" onclick="clearDailyData()">DELETE DAILY DATA</button>
   </div>
 </div>
 
@@ -526,6 +530,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
         <i class="fa-solid fa-file-export"></i>
         EXPORT XLSX
       </button>
+      <button class="dba" onclick="changeGoal()">
+        <i class="fa-solid fa-bullseye"></i>
+        CHANGE GOAL
+      </button>
     </div>
     <div class="fb">
       <span class="flbl">APP VERSION</span>
@@ -543,6 +551,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
       <div class="srow"><span class="slbl">Unique Sessions</span><span class="sval" id="db-wsess">—</span></div>
       <div class="srow"><span class="slbl">Latest Session</span><span class="sval" id="db-wlat">—</span></div>
     </div>
+    <button class="dbtn" onclick="clearProgress()">DELETE ALL USER DATA</button>
     <div class="fb">
       <span class="flbl">LAST 10 CALORIE ENTRIES</span>
       <div id="db-raw"></div>
@@ -579,7 +588,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
     </div>
     <div class="timer-status" id="timer-status">Ready for next set</div>
     <div class="timer-actions">
-      <button class="sbtn" onclick="startRestTimer()">Start Timer</button>
+      <button class="sbtn" id="timer-primary-btn" onclick="toggleRestTimer()">Start Timer</button>
       <button class="dbtn" style="margin-top:0" onclick="resetRestTimer()">Reset</button>
     </div>
   </div>
@@ -602,7 +611,7 @@ let aiFoodPreviewUrl = '';
 let timerInterval = null;
 let timerRemainingMs = 0;
 let timerEndAt = 0;
-const APP_VERSION = '2.5';
+const APP_VERSION = '2.6';
 const FOOD_AI_API_URL = window.FORGE_AI_API_URL || 'http://127.0.0.1:5001/api/food/analyze';
 const SUPABASE_URL = window.ARCHITECT_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = window.ARCHITECT_SUPABASE_ANON_KEY || '';
@@ -1015,14 +1024,16 @@ async function clearProgress(){
   try{
     if(HAS_SUPABASE && !supabaseClient) throw new Error('Supabase not connected');
     if(supabaseClient){
-      const [{error: calErr}, {error: wkErr}] = await Promise.all([
+      const [{error: calErr}, {error: wkErr}, {error: cfgErr}] = await Promise.all([
         supabaseClient.from('calorie_log').delete().gte('id',0),
-        supabaseClient.from('workout_log').delete().gte('id',0)
+        supabaseClient.from('workout_log').delete().gte('id',0),
+        supabaseClient.from('app_config').delete().eq('setting','Calorie_Goal_Daily')
       ]);
-      if(calErr || wkErr) throw (calErr || wkErr);
+      if(calErr || wkErr || cfgErr) throw (calErr || wkErr || cfgErr);
     }
     DB.calLog = [];
     DB.workoutLog = [];
+    GOAL = 2400;
     aDay = null;
     aSets = {};
     aPlan = [];
@@ -1037,6 +1048,72 @@ async function clearProgress(){
     setTimeout(()=>go('dashboard'),500);
   }catch(e){
     toast('DELETE FAILED',false,true);
+  }
+}
+async function clearDailyData(){
+  if(!window.confirm(`Delete all calorie and workout data for ${TODAY}?`)) return;
+  try{
+    if(HAS_SUPABASE && !supabaseClient) throw new Error('Supabase not connected');
+    if(supabaseClient){
+      const [{error: calErr}, {error: wkErr}] = await Promise.all([
+        supabaseClient.from('calorie_log').delete().eq('date',TODAY),
+        supabaseClient.from('workout_log').delete().eq('date',TODAY)
+      ]);
+      if(calErr || wkErr) throw (calErr || wkErr);
+    }
+    DB.calLog = DB.calLog.filter(r=>r.Date!==TODAY);
+    DB.workoutLog = DB.workoutLog.filter(r=>r.Date!==TODAY);
+    syncWB();
+    renderDash();
+    renderDaily();
+    renderWeekly();
+    if(CUR==='database') renderDB();
+    toast('DAILY DATA DELETED',true);
+  }catch(e){
+    toast('DELETE FAILED',false,true);
+  }
+}
+async function clearTodayMeals(){
+  if(!window.confirm(`Delete all meals logged for ${TODAY}?`)) return;
+  try{
+    if(HAS_SUPABASE && !supabaseClient) throw new Error('Supabase not connected');
+    if(supabaseClient){
+      const {error} = await supabaseClient.from('calorie_log').delete().eq('date',TODAY);
+      if(error) throw error;
+    }
+    DB.calLog = DB.calLog.filter(r=>r.Date!==TODAY);
+    syncWB();
+    renderDash();
+    renderDaily();
+    renderWeekly();
+    if(CUR==='database') renderDB();
+    toast('TODAYS MEALS DELETED',true);
+  }catch(e){
+    toast('DELETE FAILED',false,true);
+  }
+}
+async function changeGoal(){
+  const next = window.prompt('Enter your new daily calorie target:', String(GOAL));
+  if(next===null) return;
+  const value = parseInt(next,10);
+  if(!Number.isFinite(value) || value<=0){
+    toast('INVALID GOAL',false,true);
+    return;
+  }
+  GOAL = value;
+  try{
+    if(supabaseClient && currentUser){
+      const {error}=await supabaseClient.from('app_config').upsert([{owner_id:currentUser.id, setting:'Calorie_Goal_Daily', value:String(GOAL)}],{onConflict:'owner_id,setting'});
+      if(error) throw error;
+    }
+    syncWB();
+    renderDash();
+    renderDaily();
+    renderWeekly();
+    if(CUR==='database') renderDB();
+    toast('GOAL UPDATED',true);
+  }catch(e){
+    toast('GOAL SAVE FAILED',false,true);
   }
 }
 async function importXLSX(inp){
@@ -1459,6 +1536,10 @@ function startRestTimer(){
   }
   timerEndAt=Date.now()+timerRemainingMs;
   document.getElementById('timer-status').textContent='Timer running';
+  updateTimerPrimaryButton(true);
+  if('Notification' in window && Notification.permission==='default'){
+    Notification.requestPermission().catch(()=>{});
+  }
   updateTimerDisplay(timerRemainingMs);
   timerInterval=setInterval(()=>{
     timerRemainingMs=Math.max(0,timerEndAt-Date.now());
@@ -1476,33 +1557,69 @@ function resetRestTimer(){
   timerRemainingMs=getTimerInputMs();
   updateTimerDisplay(timerRemainingMs);
   document.getElementById('timer-status').textContent='Ready for next set';
+  updateTimerPrimaryButton(false);
 }
 function timerFinished(){
   document.getElementById('timer-status').textContent='Rest complete';
+  updateTimerPrimaryButton(false);
   if(navigator.vibrate) navigator.vibrate([250,120,250]);
+  if('Notification' in window && Notification.permission==='granted'){
+    try{ new Notification('FORGE', { body:'Rest timer complete. Time for your next set.' }); }catch(e){}
+  }
   launchConfetti();
   toast('REST COMPLETE',true);
+}
+function toggleRestTimer(){
+  if(timerInterval){
+    clearInterval(timerInterval);
+    timerInterval=null;
+    document.getElementById('timer-status').textContent='Timer stopped';
+    updateTimerPrimaryButton(false);
+    toast('TIMER STOPPED',false,true);
+    return;
+  }
+  startRestTimer();
+}
+function updateTimerPrimaryButton(running){
+  const btn=document.getElementById('timer-primary-btn');
+  if(!btn) return;
+  btn.textContent=running ? 'Stop Timer' : 'Start Timer';
+  btn.style.background=running ? 'transparent' : '';
+  btn.style.color=running ? 'var(--red)' : '';
+  btn.style.border=running ? '1px solid rgba(255,68,68,.35)' : '';
 }
 function launchConfetti(){
   const layer=document.getElementById('confetti-layer');
   layer.innerHTML='';
   const colors=['#c8ff00','#ffffff','#ff6b6b','#4ecdc4','#ffd166'];
-  for(let i=0;i<28;i++){
+  for(let i=0;i<80;i++){
     const piece=document.createElement('div');
     piece.className='confetti-piece';
     piece.style.left=`${Math.random()*100}%`;
     piece.style.background=colors[i%colors.length];
     piece.style.transform=`translateY(-20px) rotate(${Math.random()*180}deg)`;
     piece.style.animationDelay=`${Math.random()*0.4}s`;
+    piece.style.width=`${8+Math.random()*6}px`;
+    piece.style.height=`${14+Math.random()*10}px`;
     layer.appendChild(piece);
   }
-  setTimeout(()=>{ layer.innerHTML=''; },3200);
+  setTimeout(()=>{ layer.innerHTML=''; },3800);
 }
 
 // ══════════════════════════════════════════════
 //  VIEWS
 // ══════════════════════════════════════════════
 function todayCals(){ return DB.calLog.filter(r=>r.Date===TODAY).reduce((s,r)=>s+(r.Calories_kcal||0),0); }
+function renderMealSubtext(notes=''){
+  if(!String(notes).startsWith('AI_ITEMS:')) return '';
+  try{
+    const items=JSON.parse(String(notes).slice('AI_ITEMS:'.length));
+    const names=(items||[]).map(item=>item.name).filter(Boolean);
+    return names.length ? `<div class="msub">${names.join(', ')}</div>` : '';
+  }catch(e){
+    return '';
+  }
+}
 
 function weekDates(off=0){
   const d=new Date(TODAY+'T12:00:00'); d.setDate(d.getDate()+off);
@@ -1531,6 +1648,7 @@ function renderDaily(){
   document.getElementById('dp-goal-lbl').textContent='OF '+fmt(GOAL)+' KCAL';
   document.getElementById('dp-date').textContent=TODAY+' · '+dow(TODAY).toUpperCase();
   document.getElementById('dp-m-cals').textContent=fmt(c)+' kcal';
+  document.getElementById('dp-m-goal').textContent=fmt(GOAL)+' kcal';
   document.getElementById('dp-m-rem').textContent=(rem>=0?'+':'')+fmt(rem)+' kcal';
   document.getElementById('dp-m-rem').style.color=rem>=0?'var(--green)':'var(--red)';
   document.getElementById('dp-m-day').textContent=dow(TODAY).toUpperCase();
@@ -1538,7 +1656,7 @@ function renderDaily(){
   wkEl.innerHTML=wks>0?`<span class="tag g">DONE (${wks} sets)</span>`:`<span class="tag">NOT YET</span>`;
   const meals=DB.calLog.filter(r=>r.Date===TODAY);
   document.getElementById('dp-meals').innerHTML=meals.length?meals.map(m=>`
-    <div class="mrow"><div class="minfo"><div class="mname">${m.Course}</div><div class="mtime">${m.Timestamp||'—'}</div></div><div class="mcals">${fmt(m.Calories_kcal)} kcal</div></div>`).join('')
+    <div class="mrow"><div class="minfo"><div class="mname">${m.Course}</div><div class="mtime">${m.Timestamp||'—'}</div>${renderMealSubtext(m.Notes)}</div><div class="mcals">${fmt(m.Calories_kcal)} kcal</div></div>`).join('')
     :`<div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);padding:10px 0">No meals logged today.</div>`;
 }
 
@@ -1658,6 +1776,8 @@ window.addEventListener('load',async ()=>{
       CUR='dashboard';
       NAV_STACK=['dashboard'];
       updateUserUI();
+      updateTimerPrimaryButton(false);
+      updateTimerDisplay(getTimerInputMs());
       renderDash();
 
       document.getElementById('loading').classList.add('gone');
