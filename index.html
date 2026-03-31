@@ -175,6 +175,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
 .voice-meta{font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);margin-bottom:12px}
 .voice-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,110px);gap:10px;margin-bottom:12px}
 @media (max-width:390px){.voice-grid{grid-template-columns:1fr}.timer-actions{flex-direction:column}}
+.sbtn.alt{background:transparent;border:1px solid var(--border2);color:var(--text)}
+.sbtn.alt:hover{background:var(--surface2);color:var(--text)}
 .timer-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px}
 .timer-title{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:2px;line-height:1}
 .timer-copy{font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-top:6px}
@@ -580,14 +582,14 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
       </div>
       <button class="icon-btn" onclick="closeVoiceModal()" aria-label="Close voice entry"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <textarea class="voice-box" id="voice-transcript" placeholder="Tap start and speak, or use your keyboard microphone on iPhone.">Tap start and speak your meal.</textarea>
+    <textarea class="voice-box" id="voice-transcript" placeholder="Tap start and speak, or use your keyboard microphone on iPhone." oninput="parseVoiceDraft()"></textarea>
     <div class="voice-meta" id="voice-parsed">Waiting for voice input.</div>
     <div class="voice-grid">
-      <label class="timer-field"><span>Item</span><input id="voice-item" class="wk-select" type="text" placeholder="Chicken curry"></label>
-      <label class="timer-field"><span>Calories</span><input id="voice-calories" class="wk-select" type="number" min="0" placeholder="500"></label>
+      <label class="timer-field"><span>Item</span><input id="voice-item" class="wk-select" type="text" placeholder="Chicken curry" oninput="syncVoiceFields()"></label>
+      <label class="timer-field"><span>Calories</span><input id="voice-calories" class="wk-select" type="number" min="0" placeholder="500" oninput="syncVoiceFields()"></label>
     </div>
     <label class="timer-field" style="display:block;margin-bottom:12px"><span>Course</span>
-      <select id="voice-course" class="wk-select">
+      <select id="voice-course" class="wk-select" onchange="syncVoiceFields()">
         <option>Breakfast</option>
         <option>Lunch</option>
         <option>Dinner</option>
@@ -596,7 +598,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Barlow
     </label>
     <div class="timer-actions">
       <button class="sbtn" id="voice-primary-btn" onclick="toggleVoiceCapture()">Start Listening</button>
-      <button class="dbtn" style="margin-top:0" onclick="logVoiceMeal()">Log Meal</button>
+      <button class="sbtn alt" id="voice-log-btn" onclick="logVoiceMeal()">Log Meal</button>
     </div>
   </div>
 </div>
@@ -1206,10 +1208,13 @@ function resetVoiceState(){
   document.getElementById('voice-course').value=selCourseVal;
   updateVoiceButton(false);
 }
+function isSafariVoiceFallback(){
+  return !ensureVoiceRecognition() && /iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
 function updateVoiceButton(listening){
   const btn=document.getElementById('voice-primary-btn');
   if(!btn) return;
-  btn.textContent=listening ? 'Stop Listening' : 'Start Listening';
+  btn.textContent=isSafariVoiceFallback() ? 'Use Keyboard Mic' : (listening ? 'Stop Listening' : 'Start Listening');
   btn.style.background=listening ? 'transparent' : '';
   btn.style.color=listening ? 'var(--red)' : '';
   btn.style.border=listening ? '1px solid rgba(255,68,68,.35)' : '';
@@ -1220,12 +1225,18 @@ function updateCalClock(){
 }
 function openVoiceModal(){
   resetVoiceState();
-  const recognition=ensureVoiceRecognition();
-  const safariFallback = !recognition && /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const safariFallback = isSafariVoiceFallback();
   document.getElementById('voice-parsed').textContent = safariFallback
-    ? 'Safari fallback: tap the text box and use the iPhone keyboard microphone.'
+    ? 'Safari fallback: tap the text box below and use the iPhone keyboard microphone.'
     : 'Waiting for voice input.';
   document.getElementById('voice-modal').classList.add('show');
+  if(safariFallback){
+    setTimeout(()=>{
+      const box=document.getElementById('voice-transcript');
+      box.focus();
+      box.setSelectionRange(box.value.length, box.value.length);
+    },120);
+  }
 }
 function closeVoiceModal(){
   if(voiceRecognition && voiceListening) voiceRecognition.stop();
@@ -1274,6 +1285,11 @@ function parseVoiceDraft(){
     document.getElementById('voice-parsed').textContent='Could not find “item + calorie count” yet.';
   }
 }
+function syncVoiceFields(){
+  voiceParsedItem=document.getElementById('voice-item').value.trim();
+  voiceParsedCalories=parseInt(document.getElementById('voice-calories').value||'0',10)||0;
+  voiceParsedCourse=document.getElementById('voice-course').value || selCourseVal;
+}
 function ensureVoiceRecognition(){
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if(!SpeechRecognition) return null;
@@ -1303,6 +1319,7 @@ function toggleVoiceCapture(){
   if(!recognition){
     const box=document.getElementById('voice-transcript');
     box.focus();
+    box.click();
     document.getElementById('voice-parsed').textContent='Use your keyboard microphone here, then tap Log Meal.';
     toast('USE KEYBOARD MIC ON SAFARI',false,true);
     return;
@@ -1319,6 +1336,7 @@ function toggleVoiceCapture(){
 }
 async function logVoiceMeal(){
   parseVoiceDraft();
+  syncVoiceFields();
   const itemInput=document.getElementById('voice-item').value.trim();
   const calorieInput=parseInt(document.getElementById('voice-calories').value||'0',10)||0;
   const courseInput=document.getElementById('voice-course').value || selCourseVal;
