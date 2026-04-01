@@ -3141,7 +3141,7 @@
       const currentCals = DB.calLog.filter(r => r.Date === TODAY).reduce((s, r) => s + (r.Calories_kcal||0), 0);
       const prevCals = currentCals - k;
       if (prevCals < GOAL && currentCals >= GOAL) {
-        setTimeout(() => addXP(10, 'Daily Calorie Goal Met!'), 1500);
+        addXP(10, 'Daily Calorie Goal Met!');
       }
       
       toast(selCourseVal.toUpperCase() + ': ' + fmt(k) + ' KCAL LOGGED', true);
@@ -3562,14 +3562,20 @@
       }
       updateGamificationUI();
       if (supabaseClient && currentUser) {
-        await supabaseClient.from('user_stats').update({ xp: userStats.xp, level: userStats.level }).eq('user_id', currentUser.id);
+        await supabaseClient.from('user_stats').upsert({ user_id: currentUser.id, xp: userStats.xp, level: userStats.level, streak: userStats.streak, last_active: TODAY }, { onConflict: 'user_id' });
       }
       fetchLeaderboard();
     }
 
     async function refreshActiveStreak() {
       if (!currentUser || !supabaseClient) return;
-      const { data, error } = await supabaseClient.from('user_stats').select('streak, last_active, xp, level').eq('user_id', currentUser.id).single();
+      let { data, error } = await supabaseClient.from('user_stats').select('streak, last_active, xp, level').eq('user_id', currentUser.id).single();
+      
+      if (!data) {
+        data = { streak: 0, last_active: TODAY, xp: 0, level: 1 };
+        await supabaseClient.from('user_stats').upsert({ user_id: currentUser.id, xp: 0, level: 1, streak: 0, last_active: TODAY }, { onConflict: 'user_id' });
+      }
+      
       if (data) {
         let currentStreak = data.streak || 0;
         let lastDate = data.last_active;
