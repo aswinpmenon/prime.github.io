@@ -2170,6 +2170,49 @@
       </div>
     </div>
 
+    <!-- ════════ SCREEN: LEADERBOARD ════════ -->
+    <div class="screen" id="s-leaderboard">
+      <div class="topbar">
+        <button class="back-btn" onclick="back()"><i class="fa-solid fa-arrow-left"></i>BACK</button>
+        <div class="brand">FORGE</div>
+        <div style="width:36px"></div>
+      </div>
+      <div class="scroll">
+        <div class="phase">SOCIAL</div>
+        <div class="h1b">LEADER<br>BOARD.</div>
+        
+        <div class="fb" style="background:var(--accent-dim); border-color:var(--accent); text-align:center; padding-top:24px;">
+          <div style="font-size:12px; font-weight:700; color:var(--text2); letter-spacing:2px">YOUR STATS</div>
+          <div style="font-size:52px; font-weight:800; font-family:'Bebas Neue'; line-height:1;margin-top:8px">LEVEL <span id="lb-level">1</span></div>
+          <div style="font-size:16px; color:var(--green); font-weight:600; margin-top:8px; display:inline-flex; align-items:center; justify-content:center; gap:6px; background:#1c2502; padding:4px 12px; border-radius:99px; border:1px solid #c8ff0040"><i class="fa-solid fa-fire"></i> <span id="lb-streak">0</span> DAY STREAK</div>
+          
+          <div style="margin-top:20px; background:var(--surface); border-radius:100px; height:10px; overflow:hidden; position:relative; width:80%; margin-left:auto; margin-right:auto">
+            <div id="lb-progress" style="background:var(--accent); height:100%; width:0%; border-radius:100px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1)"></div>
+          </div>
+          <div style="font-size:12px; margin-top:8px; color:var(--text2)"><span id="lb-xp">0</span> XP TOTAL</div>
+        </div>
+
+        <div class="fb" style="padding:16px 0">
+          <span class="flbl" style="padding:0 16px;">GLOBAL LEADERBOARD</span>
+          <div id="lb-list" style="display:flex; flex-direction:column; margin-top:12px">
+            <div style="color:var(--text2); font-size:13px; text-align:center; padding:16px"><i class="fa-solid fa-spinner fa-spin"></i> Fetching rankings...</div>
+          </div>
+        </div>
+
+        <div class="fb">
+          <span class="flbl">ADD FRIEND</span>
+          <div style="display:flex; gap:8px">
+            <input type="text" id="lb-add-uuid" class="wk-select" placeholder="Friend's UID" style="flex:1">
+            <button class="db-acts dba" style="margin:0; flex:0 0 auto; padding:0 20px" onclick="sendFriendRequest()">ADD</button>
+          </div>
+          <div id="lb-pending" style="margin-top:16px; display:none;">
+            <span class="flbl" style="margin-bottom:8px">PENDING REQUESTS</span>
+            <div id="lb-requests-list" style="display:flex; flex-direction:column; gap:8px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="bnav">
       <button class="ni on" onclick="go('dashboard')"><span class="ni-icon"><i
             class="fa-solid fa-house"></i></span><span class="ni-label">Home</span></button>
@@ -2178,7 +2221,9 @@
       <button class="ni" onclick="go('record-workout')"><span class="ni-icon"><i
             class="fa-solid fa-dumbbell"></i></span><span class="ni-label">Gym</span></button>
       <button class="ni" onclick="go('progress-weekly')"><span class="ni-icon"><i
-            class="fa-solid fa-chart-line"></i></span><span class="ni-label">Progress</span></button>
+            class="fa-solid fa-chart-line"></i></span><span class="ni-label">Stats</span></button>
+      <button class="ni" onclick="go('leaderboard')"><span class="ni-icon"><i
+            class="fa-solid fa-gamepad"></i></span><span class="ni-label">Social</span></button>
     </div>
 
     <div class="toast" id="toast"></div>
@@ -2269,7 +2314,10 @@
     let voiceParsedItem = '';
     let voiceParsedCalories = 0;
     let voiceParsedCourse = 'Breakfast';
-    const APP_VERSION = '3.2.0';
+    let userStats = { xp: 0, level: 1, streak: 0 };
+    let friendsList = [];
+    let friendRequests = [];
+    const APP_VERSION = '3.3.0';
     const FOOD_AI_API_URL = window.FORGE_AI_API_URL || 'http://127.0.0.1:5001/api/food/analyze';
     const AI_COACH_API_URL = window.FORGE_AI_COACH_URL || 'http://127.0.0.1:5001/api/health/coach';
     const SUPABASE_URL = window.ARCHITECT_SUPABASE_URL || '';
@@ -2377,7 +2425,7 @@
         toEl.classList.add('is-active');
 
         // Update bottom nav
-        const navMap = { dashboard: 0, 'record-calorie': 1, 'record-workout': 2, 'progress-daily': 3, 'progress-weekly': 3 };
+        const navMap = { dashboard: 0, 'record-calorie': 1, 'record-workout': 2, 'progress-daily': 3, 'progress-weekly': 3, leaderboard: 4 };
         document.querySelectorAll('.ni').forEach((n, i) => n.classList.toggle('on', i === navMap[to]));
 
         // Cleanup after transition
@@ -2637,6 +2685,8 @@
       renderDaily();
       renderWeekly();
       renderDB();
+      refreshActiveStreak();
+      loadSocialData();
       return true;
     }
     async function seedSupabaseFromDB() {
@@ -3087,6 +3137,13 @@
       }
       DB.calLog.push(row);
       syncWB();
+      
+      const currentCals = DB.calLog.filter(r => r.Date === TODAY).reduce((s, r) => s + (r.Calories_kcal||0), 0);
+      const prevCals = currentCals - k;
+      if (prevCals < GOAL && currentCals >= GOAL) {
+        setTimeout(() => addXP(10, 'Daily Calorie Goal Met!'), 1500);
+      }
+      
       toast(selCourseVal.toUpperCase() + ': ' + fmt(k) + ' KCAL LOGGED', true);
       calVal = ''; updCalDisp();
       setTimeout(() => go('dashboard'), 900);
@@ -3330,6 +3387,7 @@
       }
       DB.workoutLog.push(...rows);
       syncWB(); toast('SESSION COMMITTED ✓', true);
+      addXP(20, 'Workout Logged');
       setTimeout(() => go('dashboard'), 900);
     }
     function discardSess() {
@@ -3466,6 +3524,183 @@
       return Array.from({ length: 7 }, (_, i) => { const x = new Date(mon); x.setDate(mon.getDate() + i); return x.getFullYear() + '-' + S(x.getMonth() + 1) + '-' + S(x.getDate()); });
     }
     function weekCals(off = 0) { return weekDates(off).map(d => DB.calLog.filter(r => r.Date === d).reduce((s, r) => s + (r.Calories_kcal || 0), 0)).reduce((s, v) => s + v, 0); }
+
+    // ── Gamification System ──────────────────────
+    function calcLevel(xp) {
+      return Math.floor(Math.sqrt(xp / 10)) + 1;
+    }
+    
+    function xpForLevel(level) {
+      if (level <= 1) return 0;
+      return 10 * Math.pow(level - 1, 2);
+    }
+    
+    function updateGamificationUI() {
+      if (document.getElementById('lb-level')) document.getElementById('lb-level').innerText = userStats.level;
+      if (document.getElementById('lb-xp')) document.getElementById('lb-xp').innerText = userStats.xp;
+      if (document.getElementById('lb-streak')) document.getElementById('lb-streak').innerText = userStats.streak;
+      
+      const elProg = document.getElementById('lb-progress');
+      const currentLevelXP = xpForLevel(userStats.level);
+      const nextLevelXP = xpForLevel(userStats.level + 1);
+      const progressXP = userStats.xp - currentLevelXP;
+      const requiredXP = nextLevelXP - currentLevelXP;
+      const pct = Math.min(100, Math.max(0, (progressXP / requiredXP) * 100));
+      if(elProg) elProg.style.width = pct + '%';
+    }
+
+    async function addXP(amount, reason) {
+      if (!amount) return;
+      userStats.xp += amount;
+      const newLevel = calcLevel(userStats.xp);
+      if (newLevel > userStats.level) {
+        userStats.level = newLevel;
+        toast(`LEVEL UP! You are now Level ${newLevel}`, true);
+        triggerConfetti(2);
+      } else {
+        toast(`+${amount} XP (${reason})`, true);
+      }
+      updateGamificationUI();
+      if (supabaseClient && currentUser) {
+        await supabaseClient.from('user_stats').update({ xp: userStats.xp, level: userStats.level }).eq('user_id', currentUser.id);
+      }
+      fetchLeaderboard();
+    }
+
+    async function refreshActiveStreak() {
+      if (!currentUser || !supabaseClient) return;
+      const { data, error } = await supabaseClient.from('user_stats').select('streak, last_active, xp, level').eq('user_id', currentUser.id).single();
+      if (data) {
+        let currentStreak = data.streak || 0;
+        let lastDate = data.last_active;
+        let diffDays = 0;
+        if (lastDate) {
+          const t1 = new Date(lastDate).setHours(0,0,0,0);
+          const t2 = new Date(TODAY).setHours(0,0,0,0);
+          diffDays = Math.floor((t2 - t1) / (1000*60*60*24));
+        } else {
+          diffDays = -1;
+        }
+        
+        let needsUpdate = false;
+        const hasLoggedToday = DB.calLog.some(r => r.Date === TODAY) || DB.workoutLog.some(r => r.Date === TODAY);
+        
+        if (hasLoggedToday) {
+           if (diffDays === 1) { 
+             currentStreak += 1;
+             needsUpdate = true;
+             if (currentStreak % 7 === 0) {
+                setTimeout(() => addXP(50, '7-Day Streak Bonus!'), 2000);
+             }
+           } else if (diffDays > 1 || diffDays === -1) {
+             currentStreak = 1; 
+             needsUpdate = true;
+           } else if (diffDays === 0 && currentStreak === 0) {
+             currentStreak = 1;
+             needsUpdate = true;
+           }
+        } else {
+           if (diffDays > 1) { 
+             currentStreak = 0;
+             needsUpdate = true;
+           }
+        }
+        
+        userStats.streak = currentStreak;
+        userStats.xp = data.xp || 0;
+        userStats.level = data.level || calcLevel(data.xp);
+        
+        if (needsUpdate) {
+            await supabaseClient.from('user_stats').update({ streak: currentStreak, last_active: TODAY }).eq('user_id', currentUser.id);
+        }
+        updateGamificationUI();
+      }
+    }
+
+    async function loadSocialData() {
+       if (!currentUser || !supabaseClient) return;
+       const { data: reqs } = await supabaseClient.from('friend_requests')
+          .select('id, sender_id')
+          .eq('status', 'pending')
+          .eq('receiver_id', currentUser.id);
+       
+       const pendingBox = document.getElementById('lb-pending');
+       const reqList = document.getElementById('lb-requests-list');
+       if (reqs && reqs.length > 0) {
+           pendingBox.style.display = 'block';
+           reqList.innerHTML = reqs.map(r => `
+             <div style="background:var(--surface2); padding:12px; border-radius:12px; display:flex; justify-content:space-between; align-items:center">
+                <span style="font-size:14px; font-family:'Space Mono'; color:var(--text2)">UID:...${r.sender_id.slice(-6)}</span>
+                <div>
+                   <button class="db-acts dba" style="margin:0; padding:4px 12px; border-color:var(--green); color:var(--green)" onclick="acceptFriendRequest('${r.id}', '${r.sender_id}')">ACCEPT</button>
+                </div>
+             </div>
+           `).join('');
+       } else {
+           pendingBox.style.display = 'none';
+       }
+
+       fetchLeaderboard();
+    }
+
+    async function sendFriendRequest() {
+      if (!supabaseClient || !currentUser) { toast('Please sign in first.', false, true); return; }
+      const uuidObj = document.getElementById('lb-add-uuid');
+      const friend_id = String(uuidObj.value).trim();
+      if(!friend_id || friend_id === currentUser.id) return;
+      
+      const { error } = await supabaseClient.from('friend_requests').insert({ sender_id: currentUser.id, receiver_id: friend_id });
+      if (error) { toast('Failed to send request.', false, true); }
+      else { toast('Request Sent!', true); uuidObj.value = ''; }
+    }
+    
+    async function acceptFriendRequest(req_id, sender_id) {
+       if (!supabaseClient || !currentUser) return;
+       await supabaseClient.from('friend_requests').update({ status: 'accepted' }).eq('id', req_id);
+       await supabaseClient.from('friends').insert([
+          { user_id: currentUser.id, friend_id: sender_id },
+          { user_id: sender_id, friend_id: currentUser.id }
+       ]);
+       toast('Friend added!', true);
+       loadSocialData();
+    }
+    
+    window.fetchLeaderboard = async function() {
+      if (!supabaseClient || !currentUser) return;
+      
+      const { data: friends } = await supabaseClient.from('friends').select('friend_id').eq('user_id', currentUser.id);
+      let userIds = [currentUser.id];
+      if (friends) {
+         userIds = userIds.concat(friends.map(f => f.friend_id));
+      }
+      
+      const { data: stats } = await supabaseClient.from('user_stats').select('user_id, xp, level, streak').in('user_id', userIds).order('xp', { ascending: false });
+      
+      const listEl = document.getElementById('lb-list');
+      if (stats && stats.length > 0) {
+         listEl.innerHTML = stats.map((s, index) => {
+            const isMe = s.user_id === currentUser.id;
+            const name = isMe ? 'YOU' : 'UID: ...' + s.user_id.slice(-6);
+            const rankClass = index === 0 ? 'color:var(--green);' : (index === 1 ? 'color:#ddd;' : (index === 2 ? 'color:#b87333;' : 'color:var(--text2);'));
+            const bgClass = isMe ? 'background:var(--surface3); border:1px solid var(--accent);' : 'background:var(--surface2);';
+            return `
+              <div style="${bgClass} padding:12px 16px; border-radius:12px; display:flex; align-items:center; gap:16px; margin-bottom:8px">
+                 <div style="font-size:20px; font-family:'Bebas Neue'; ${rankClass} width:20px; text-align:center">${index + 1}</div>
+                 <div style="flex:1">
+                    <div style="font-weight:700; font-size:15px; display:flex; gap:8px; align-items:center">
+                       ${name} 
+                       <span style="font-family:'Space Mono'; font-size:10px; background:var(--surface); padding:2px 6px; border-radius:4px; font-weight:normal; letter-spacing:1px; color:var(--text)">LVL ${s.level}</span>
+                    </div>
+                    <div style="font-size:12px; color:var(--text2); margin-top:4px"><i class="fa-solid fa-fire" style="color:var(--green); font-size:10px"></i> ${s.streak} Days</div>
+                 </div>
+                 <div style="font-family:'Space Mono'; font-weight:700; color:var(--text); font-size:16px">${s.xp} <span style="font-size:10px; color:var(--text2); font-weight:normal">XP</span></div>
+              </div>
+            `;
+         }).join('');
+      } else {
+         listEl.innerHTML = `<div style="color:var(--text2); font-size:13px; text-align:center; padding:16px">No data returned.</div>`;
+      }
+    };
 
     async function fetchDailyCoach() {
       const cacheKey = `coach_feedback_${TODAY}`;
