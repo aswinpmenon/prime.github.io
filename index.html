@@ -82,15 +82,15 @@
       pointer-events: all;
       transform: translateX(0);
       opacity: 1;
-      transition: transform .38s cubic-bezier(.4, 0, .2, 1), opacity .38s cubic-bezier(.4, 0, .2, 1);
+      transition: transform .4s cubic-bezier(.32, 0.72, 0, 1), opacity .4s cubic-bezier(.32, 0.72, 0, 1)
     }
 
     .screen.exit-left {
       visibility: visible;
       pointer-events: none;
-      transform: translateX(-40%);
+      transform: translateX(-38%);
       opacity: 0;
-      transition: transform .38s cubic-bezier(.4, 0, .2, 1), opacity .38s cubic-bezier(.4, 0, .2, 1);
+      transition: transform .4s cubic-bezier(.32, 0.72, 0, 1), opacity .4s cubic-bezier(.32, 0.72, 0, 1)
     }
 
     .screen.exit-right {
@@ -98,7 +98,7 @@
       pointer-events: none;
       transform: translateX(100%);
       opacity: 0;
-      transition: transform .38s cubic-bezier(.4, 0, .2, 1), opacity .38s cubic-bezier(.4, 0, .2, 1);
+      transition: transform .4s cubic-bezier(.32, 0.72, 0, 1), opacity .4s cubic-bezier(.32, 0.72, 0, 1)
     }
 
     .screen.prepare-right {
@@ -312,6 +312,231 @@
       letter-spacing: 2px;
       line-height: 1.0;
       margin-bottom: 6px
+    }
+
+    .h1b.lb-title-single {
+      white-space: nowrap;
+      font-size: clamp(28px, 9.2vw, 50px);
+      letter-spacing: 1px
+    }
+
+    /* Leaderboard friend row — iOS-style swipe to reveal remove */
+    .lb-swipe {
+      position: relative;
+      overflow: hidden;
+      touch-action: pan-y
+    }
+
+    .lb-swipe.show-delete .lb-row-inner {
+      transform: translateX(-88px)
+    }
+
+    .lb-row-inner {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      background: inherit;
+      position: relative;
+      z-index: 2;
+      transition: transform .22s ease
+    }
+
+    .lb-fremove {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 88px;
+      border: none;
+      background: var(--red);
+      color: #fff;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      z-index: 1;
+      padding: 0 8px
+    }
+
+    .db-easter-hint {
+      text-align: center;
+      font-size: 10px;
+      color: var(--text3);
+      letter-spacing: 0.5px;
+      margin-top: 28px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      opacity: .45
+    }
+
+    .db-easter-hint:active {
+      opacity: .75
+    }
+
+    .easter-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(0, 0, 0, .72);
+      backdrop-filter: blur(6px)
+    }
+
+    .easter-modal.is-open {
+      display: flex
+    }
+
+    .easter-panel {
+      width: 100%;
+      max-width: 320px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px
+    }
+
+    .easter-panel .et {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--text2);
+      margin-bottom: 12px
+    }
+
+    .easter-panel .eq {
+      font-family: 'Space Mono', monospace;
+      font-size: 18px;
+      color: var(--green);
+      margin-bottom: 16px
+    }
+
+    .easter-panel input {
+      width: 100%;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-size: 16px;
+      margin-bottom: 14px
+    }
+
+    .easter-actions {
+      display: flex;
+      gap: 10px
+    }
+
+    .easter-actions button {
+      flex: 1;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      letter-spacing: 1px;
+      cursor: pointer
+    }
+
+    .easter-actions .primary {
+      background: var(--green);
+      color: #0a0a0a;
+      border-color: var(--green)
+    }
+
+    .easter-actions .ghost {
+      background: transparent;
+      color: var(--text2)
+    }
+
+    /* About (easter egg) screen */
+    #s-about.screen-about-wrap {
+      background: var(--green);
+      color: #0a0a0a
+    }
+
+    #s-about.screen-about-wrap .topbar {
+      background: var(--green);
+      border-bottom-color: rgba(10, 10, 10, .12)
+    }
+
+    #s-about.screen-about-wrap .back-btn,
+    #s-about.screen-about-wrap .brand {
+      color: #0a0a0a
+    }
+
+    #s-about.screen-about-wrap .icon-btn {
+      color: rgba(10, 10, 10, .55)
+    }
+
+    #s-about.screen-about-wrap .scroll {
+      padding-bottom: calc(var(--nav-h) + 28px)
+    }
+
+    .about-body {
+      padding: 8px 0 32px
+    }
+
+    .about-body .ab-h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 42px;
+      letter-spacing: 2px;
+      line-height: 1.1;
+      margin-bottom: 8px;
+      color: #0a0a0a
+    }
+
+    .about-body .ab-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: rgba(10, 10, 10, .55);
+      margin-bottom: 20px
+    }
+
+    .about-body p {
+      font-size: 14px;
+      line-height: 1.55;
+      color: #0a0a0a;
+      margin-bottom: 16px
+    }
+
+    .about-links {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 20px
+    }
+
+    .about-links a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      background: #0a0a0a;
+      color: var(--green);
+      text-decoration: none;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      font-size: 13px;
+      border: 1px solid #0a0a0a
+    }
+
+    .about-links a.bmc {
+      background: #ffdd00;
+      color: #0a0a0a;
+      border-color: #0a0a0a
     }
 
     .desc {
@@ -2167,6 +2392,31 @@
           <span class="flbl">LAST 10 CALORIE ENTRIES</span>
           <div id="db-raw"></div>
         </div>
+        <div class="db-easter-hint" onclick="openForgeEasterEntry()">checksum · v3.6</div>
+      </div>
+    </div>
+
+    <!-- ════════ SCREEN: ABOUT (easter egg) ════════ -->
+    <div class="screen screen-about-wrap" id="s-about">
+      <div class="topbar">
+        <button class="back-btn" onclick="back()"><i class="fa-solid fa-arrow-left"></i>BACK</button>
+        <div class="brand">FORGE</div>
+        <div style="width:36px"></div>
+      </div>
+      <div class="scroll">
+        <div class="about-body">
+          <div class="ab-h1">ASWIN MENON</div>
+          <div class="ab-sub">CREATOR · FORGE</div>
+          <p>FORGE is a training and nutrition companion: log meals (manual, voice, or AI), track workouts by split, and stay motivated with streaks, XP, and friends. Built as a focused static app with Supabase and a Gemini-powered backend — no clutter, just progress.</p>
+          <div class="about-links">
+            <a href="https://www.linkedin.com/in/aswinpmenon/" target="_blank" rel="noopener noreferrer"><i
+                class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://github.com/aswinpmenon" target="_blank" rel="noopener noreferrer"><i
+                class="fa-brands fa-github"></i> GitHub</a>
+            <a class="bmc" href="https://buymeacoffee.com/aswinpmenon" target="_blank" rel="noopener noreferrer"><i
+                class="fa-solid fa-mug-hot"></i> Buy me a coffee</a>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -2179,15 +2429,24 @@
       </div>
       <div class="scroll">
         <div class="phase">SOCIAL</div>
-        <div class="h1b">LEADER<br>BOARD.</div>
-        
-        <div class="fb" style="background:var(--accent-dim); border-color:var(--accent); text-align:center; padding-top:24px;">
+        <div class="h1b lb-title-single">LEADERBOARD.</div>
+
+        <div class="fb"
+          style="background:var(--accent-dim); border-color:var(--accent); text-align:center; padding-top:24px;">
           <div style="font-size:12px; font-weight:700; color:var(--text2); letter-spacing:2px">YOUR STATS</div>
-          <div style="font-size:52px; font-weight:800; font-family:'Bebas Neue'; line-height:1;margin-top:8px">LEVEL <span id="lb-level">1</span></div>
-          <div style="font-size:16px; color:var(--green); font-weight:600; margin-top:8px; display:inline-flex; align-items:center; justify-content:center; gap:6px; background:#1c2502; padding:4px 12px; border-radius:99px; border:1px solid #c8ff0040"><i class="fa-solid fa-fire"></i> <span id="lb-streak">0</span> DAY STREAK</div>
-          
-          <div style="margin-top:20px; background:var(--surface); border-radius:100px; height:10px; overflow:hidden; position:relative; width:80%; margin-left:auto; margin-right:auto">
-            <div id="lb-progress" style="background:var(--accent); height:100%; width:0%; border-radius:100px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1)"></div>
+          <div style="font-size:52px; font-weight:800; font-family:'Bebas Neue'; line-height:1;margin-top:8px">LEVEL
+            <span id="lb-level">1</span>
+          </div>
+          <div
+            style="font-size:16px; color:var(--green); font-weight:600; margin-top:8px; display:inline-flex; align-items:center; justify-content:center; gap:6px; background:#1c2502; padding:4px 12px; border-radius:99px; border:1px solid #c8ff0040">
+            <i class="fa-solid fa-fire"></i> <span id="lb-streak">0</span> DAY STREAK
+          </div>
+
+          <div
+            style="margin-top:20px; background:var(--surface); border-radius:100px; height:10px; overflow:hidden; position:relative; width:80%; margin-left:auto; margin-right:auto">
+            <div id="lb-progress"
+              style="background:var(--accent); height:100%; width:0%; border-radius:100px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1)">
+            </div>
           </div>
           <div style="font-size:12px; margin-top:8px; color:var(--text2)"><span id="lb-xp">0</span> XP TOTAL</div>
         </div>
@@ -2195,7 +2454,8 @@
         <div class="fb" style="padding:0; overflow:hidden">
           <div style="padding:16px 16px 8px;"><span class="flbl">GLOBAL LEADERBOARD</span></div>
           <div id="lb-list" style="display:flex; flex-direction:column">
-            <div style="color:var(--text2); font-size:13px; text-align:center; padding:16px"><i class="fa-solid fa-spinner fa-spin"></i> Fetching rankings...</div>
+            <div style="color:var(--text2); font-size:13px; text-align:center; padding:16px"><i
+                class="fa-solid fa-spinner fa-spin"></i> Fetching rankings...</div>
           </div>
         </div>
 
@@ -2203,7 +2463,8 @@
           <span class="flbl">ADD FRIEND</span>
           <div style="display:flex; gap:8px">
             <input type="text" id="lb-add-email" class="wk-select" placeholder="Friend's Email address" style="flex:1">
-            <button class="db-acts dba" style="margin:0; flex:0 0 auto; padding:0 20px" onclick="sendFriendRequest()">ADD</button>
+            <button class="db-acts dba" style="margin:0; flex:0 0 auto; padding:0 20px"
+              onclick="sendFriendRequest()">ADD</button>
           </div>
           <div id="lb-pending" style="margin-top:16px; display:none;">
             <span class="flbl" style="margin-bottom:8px">PENDING REQUESTS</span>
@@ -2224,6 +2485,19 @@
             class="fa-solid fa-chart-line"></i></span><span class="ni-label">Stats</span></button>
       <button class="ni" onclick="go('leaderboard')"><span class="ni-icon"><i
             class="fa-solid fa-gamepad"></i></span><span class="ni-label">Social</span></button>
+    </div>
+
+    <div class="easter-modal" id="easter-modal" aria-hidden="true" onclick="closeEasterModal()">
+      <div class="easter-panel" onclick="event.stopPropagation()">
+        <div class="et">QUICK CHECK</div>
+        <div class="eq" id="easter-q">—</div>
+        <input type="number" id="easter-a" inputmode="numeric" placeholder="Answer" autocomplete="off"
+          onkeydown="if(event.key==='Enter')submitEasterAnswer()">
+        <div class="easter-actions">
+          <button type="button" class="ghost" onclick="closeEasterModal()">Cancel</button>
+          <button type="button" class="primary" onclick="submitEasterAnswer()">Verify</button>
+        </div>
+      </div>
     </div>
 
     <div class="toast" id="toast"></div>
@@ -2317,7 +2591,7 @@
     let userStats = { xp: 0, level: 1, streak: 0 };
     let friendsList = [];
     let friendRequests = [];
-    const APP_VERSION = '3.3.0';
+    const APP_VERSION = '3.6.0';
     const FOOD_AI_API_URL = window.FORGE_AI_API_URL || 'http://127.0.0.1:5001/api/food/analyze';
     const AI_COACH_API_URL = window.FORGE_AI_COACH_URL || 'http://127.0.0.1:5001/api/health/coach';
     const SUPABASE_URL = window.ARCHITECT_SUPABASE_URL || '';
@@ -2366,7 +2640,7 @@
     // ══════════════════════════════════════════════
     //  NAVIGATION  — fully rebuilt, race-condition free
     // ══════════════════════════════════════════════
-    const SCREEN_IDS = ['dashboard', 'record-calorie', 'record-workout', 'progress-daily', 'progress-weekly', 'database'];
+    const SCREEN_IDS = ['dashboard', 'record-calorie', 'record-workout', 'progress-daily', 'progress-weekly', 'database', 'leaderboard', 'about'];
     // Depth: dashboard=0, everything else=1
     function depth(id) { return id === 'dashboard' ? 0 : 1; }
 
@@ -2424,19 +2698,24 @@
         toEl.style.opacity = '';
         toEl.classList.add('is-active');
 
-        // Update bottom nav
-        const navMap = { dashboard: 0, 'record-calorie': 1, 'record-workout': 2, 'progress-daily': 3, 'progress-weekly': 3, leaderboard: 4 };
-        document.querySelectorAll('.ni').forEach((n, i) => n.classList.toggle('on', i === navMap[to]));
+        // Update bottom nav (hidden stack screens like About leave no tab highlighted)
+        if (to === 'about') {
+          document.querySelectorAll('.bnav .ni').forEach((n) => n.classList.remove('on'));
+        } else {
+          const navMap = { dashboard: 0, 'record-calorie': 1, 'record-workout': 2, 'progress-daily': 3, 'progress-weekly': 3, leaderboard: 4 };
+          document.querySelectorAll('.bnav .ni').forEach((n, i) => n.classList.toggle('on', i === navMap[to]));
+        }
 
-        // Cleanup after transition
+        // Cleanup after transition — only reset the outgoing screen; avoid stripping the active screen mid-frame
         navTimer = setTimeout(() => {
-          if (fromEl) {
-            resetScreenState(fromEl);
-          }
-          resetScreenState(toEl);
+          if (fromEl) resetScreenState(fromEl);
+          toEl.classList.remove('exit-left', 'exit-right', 'prepare-right', 'prepare-left');
+          toEl.style.transition = '';
+          toEl.style.opacity = '';
+          toEl.style.visibility = 'visible';
           toEl.classList.add('is-active');
           locked = false;
-        }, 420);
+        }, 400);
 
         CUR = to;
         if (pushHistory) {
@@ -2466,6 +2745,57 @@
       if (s === 'progress-daily') renderDaily();
       if (s === 'progress-weekly') renderWeekly();
       if (s === 'database') renderDB();
+      if (s === 'leaderboard') loadSocialData();
+    }
+
+    const FORGE_EASTER_KEY = 'forge_about_unlock_v36';
+    let easterExpectedAnswer = 0;
+
+    function openForgeEasterEntry() {
+      try {
+        if (localStorage.getItem(FORGE_EASTER_KEY) === '1') {
+          go('about');
+          return;
+        }
+      } catch (e) { /* ignore */ }
+      openEasterModal();
+    }
+
+    function openEasterModal() {
+      const a = 2 + Math.floor(Math.random() * 11);
+      const b = 2 + Math.floor(Math.random() * 11);
+      easterExpectedAnswer = a + b;
+      const q = document.getElementById('easter-q');
+      const inp = document.getElementById('easter-a');
+      if (q) q.textContent = `What is ${a} + ${b}?`;
+      if (inp) { inp.value = ''; }
+      const m = document.getElementById('easter-modal');
+      if (m) {
+        m.classList.add('is-open');
+        m.setAttribute('aria-hidden', 'false');
+      }
+      setTimeout(() => { try { inp.focus(); } catch (e) { } }, 120);
+    }
+
+    function closeEasterModal() {
+      const m = document.getElementById('easter-modal');
+      if (m) {
+        m.classList.remove('is-open');
+        m.setAttribute('aria-hidden', 'true');
+      }
+    }
+
+    function submitEasterAnswer() {
+      const inp = document.getElementById('easter-a');
+      const v = inp ? parseInt(String(inp.value).trim(), 10) : NaN;
+      if (Number.isFinite(v) && v === easterExpectedAnswer) {
+        try { localStorage.setItem(FORGE_EASTER_KEY, '1'); } catch (e) { }
+        closeEasterModal();
+        toast('ACCESS GRANTED', true);
+        go('about');
+      } else {
+        toast('TRY AGAIN', false, true);
+      }
     }
 
     // ══════════════════════════════════════════════
@@ -3137,13 +3467,13 @@
       }
       DB.calLog.push(row);
       syncWB();
-      
-      const currentCals = DB.calLog.filter(r => r.Date === TODAY).reduce((s, r) => s + (r.Calories_kcal||0), 0);
+
+      const currentCals = DB.calLog.filter(r => r.Date === TODAY).reduce((s, r) => s + (r.Calories_kcal || 0), 0);
       const prevCals = currentCals - k;
       if (prevCals < GOAL && currentCals >= GOAL) {
         addXP(10, 'Daily Calorie Goal Met!');
       }
-      
+
       toast(selCourseVal.toUpperCase() + ': ' + fmt(k) + ' KCAL LOGGED', true);
       calVal = ''; updCalDisp();
       setTimeout(() => go('dashboard'), 900);
@@ -3529,54 +3859,54 @@
     function calcLevel(xp) {
       return Math.floor(Math.sqrt(xp / 10)) + 1;
     }
-    
+
     function xpForLevel(level) {
       if (level <= 1) return 0;
       return 10 * Math.pow(level - 1, 2);
     }
-    
+
     function updateGamificationUI() {
       if (document.getElementById('lb-level')) document.getElementById('lb-level').innerText = userStats.level;
       if (document.getElementById('lb-xp')) document.getElementById('lb-xp').innerText = userStats.xp;
       if (document.getElementById('lb-streak')) document.getElementById('lb-streak').innerText = userStats.streak;
-      
+
       const elProg = document.getElementById('lb-progress');
       const currentLevelXP = xpForLevel(userStats.level);
       const nextLevelXP = xpForLevel(userStats.level + 1);
       const progressXP = userStats.xp - currentLevelXP;
       const requiredXP = nextLevelXP - currentLevelXP;
       const pct = Math.min(100, Math.max(0, (progressXP / requiredXP) * 100));
-      if(elProg) elProg.style.width = pct + '%';
+      if (elProg) elProg.style.width = pct + '%';
     }
 
     async function addXP(amount, reason) {
       if (!amount || !supabaseClient || !currentUser) return;
-      
+
       // Always read the LIVE value from DB first to avoid race conditions
       const { data: liveRow } = await supabaseClient.from('user_stats').select('xp, level, streak, last_active').eq('user_id', currentUser.id).single();
-      
+
       const baseXP = liveRow ? (liveRow.xp || 0) : 0;
       const newXP = baseXP + amount;
       const newLevel = calcLevel(newXP);
       const oldLevel = liveRow ? (liveRow.level || 1) : userStats.level;
-      
+
       // Update in-memory state
       userStats.xp = newXP;
       userStats.level = newLevel;
-      
+
       // Persist to DB atomically — include email so upsert never nulls it out
       const userEmail = currentUser.email || null;
       const { error } = await supabaseClient.from('user_stats').upsert(
         { user_id: currentUser.id, email: userEmail, xp: newXP, level: newLevel, streak: userStats.streak, last_active: TODAY },
         { onConflict: 'user_id' }
       );
-      
+
       if (error) {
         console.error('XP save failed:', error);
         toast('XP SAVE FAILED', false, true);
         return;
       }
-      
+
       // Toast and level-up animation
       if (newLevel > oldLevel) {
         toast(`⚡ LEVEL UP! Now Level ${newLevel}`, true);
@@ -3584,17 +3914,17 @@
       } else {
         toast(`+${amount} XP — ${reason}`, true);
       }
-      
+
       updateGamificationUI();
       if (typeof fetchLeaderboard === 'function') fetchLeaderboard();
     }
 
     async function refreshActiveStreak() {
       if (!currentUser || !supabaseClient) return;
-      
+
       const userEmail = currentUser.email || null;
       let { data } = await supabaseClient.from('user_stats').select('streak, last_active, xp, level').eq('user_id', currentUser.id).single();
-      
+
       // Auto-create row for this user if it doesn't exist
       if (!data) {
         await supabaseClient.from('user_stats').upsert(
@@ -3603,26 +3933,26 @@
         );
         data = { xp: 0, level: 1, streak: 0, last_active: null };
       }
-      
+
       // Load XP/level into memory WITHOUT overwriting in-progress addXP calls
       // Only set if memory is at default (first load)
       if (userStats.xp === 0) userStats.xp = data.xp || 0;
       if (userStats.level === 1) userStats.level = data.level || calcLevel(data.xp || 0);
-      
+
       // ── Streak Logic ──────────────────────────────
       let currentStreak = data.streak || 0;
       const lastDate = data.last_active;
       let diffDays = -1; // -1 = never logged before
-      
+
       if (lastDate) {
         const t1 = new Date(lastDate).setHours(0, 0, 0, 0);
         const t2 = new Date(TODAY).setHours(0, 0, 0, 0);
         diffDays = Math.floor((t2 - t1) / (1000 * 60 * 60 * 24));
       }
-      
+
       const hasLoggedToday = DB.calLog.some(r => r.Date === TODAY) || DB.workoutLog.some(r => r.Date === TODAY);
       let needsStreakUpdate = false;
-      
+
       if (hasLoggedToday) {
         if (diffDays === 0) {
           // Already updated today — keep the existing streak value
@@ -3646,57 +3976,57 @@
           needsStreakUpdate = true;
         }
       }
-      
+
       userStats.streak = currentStreak;
-      
+
       if (needsStreakUpdate) {
         await supabaseClient.from('user_stats').update({ streak: currentStreak, last_active: TODAY }).eq('user_id', currentUser.id);
       }
-      
+
       updateGamificationUI();
     }
 
     async function loadSocialData() {
-       if (!currentUser || !supabaseClient) return;
-       const { data: reqs } = await supabaseClient.from('friend_requests')
-          .select('id, sender_id')
-          .eq('status', 'pending')
-          .eq('receiver_id', currentUser.id);
-       
-       const pendingBox = document.getElementById('lb-pending');
-       const reqList = document.getElementById('lb-requests-list');
-       if (reqs && reqs.length > 0) {
-           const senderIds = reqs.map(r => r.sender_id);
-           const { data: senders } = await supabaseClient.from('user_stats').select('user_id, email').in('user_id', senderIds);
-           const emailMap = {};
-           if (senders) senders.forEach(s => emailMap[s.user_id] = s.email || 'UID:...'+s.user_id.slice(-6));
+      if (!currentUser || !supabaseClient) return;
+      const { data: reqs } = await supabaseClient.from('friend_requests')
+        .select('id, sender_id')
+        .eq('status', 'pending')
+        .eq('receiver_id', currentUser.id);
 
-           pendingBox.style.display = 'block';
-           reqList.innerHTML = reqs.map(r => `
+      const pendingBox = document.getElementById('lb-pending');
+      const reqList = document.getElementById('lb-requests-list');
+      if (reqs && reqs.length > 0) {
+        const senderIds = reqs.map(r => r.sender_id);
+        const { data: senders } = await supabaseClient.from('user_stats').select('user_id, email').in('user_id', senderIds);
+        const emailMap = {};
+        if (senders) senders.forEach(s => emailMap[s.user_id] = s.email || 'UID:...' + s.user_id.slice(-6));
+
+        pendingBox.style.display = 'block';
+        reqList.innerHTML = reqs.map(r => `
              <div style="background:var(--surface2); padding:12px; border-radius:12px; display:flex; justify-content:space-between; align-items:center">
-                <span style="font-size:14px; font-family:'Space Mono'; color:var(--text2)">${emailMap[r.sender_id] || 'UID:...'+r.sender_id.slice(-6)}</span>
+                <span style="font-size:14px; font-family:'Space Mono'; color:var(--text2)">${emailMap[r.sender_id] || 'UID:...' + r.sender_id.slice(-6)}</span>
                 <div>
                    <button class="db-acts dba" style="margin:0; padding:4px 12px; border-color:var(--green); color:var(--green)" onclick="acceptFriendRequest('${r.id}', '${r.sender_id}')">ACCEPT</button>
                 </div>
              </div>
            `).join('');
-       } else {
-           pendingBox.style.display = 'none';
-       }
+      } else {
+        pendingBox.style.display = 'none';
+      }
 
-       fetchLeaderboard();
+      fetchLeaderboard();
     }
 
     async function sendFriendRequest() {
       if (!supabaseClient || !currentUser) { toast('Please sign in first.', false, true); return; }
       const emailObj = document.getElementById('lb-add-email');
       const friend_email = String(emailObj.value).trim();
-      if(!friend_email) return;
-      
+      if (!friend_email) return;
+
       const { data: friendRow, error: findError } = await supabaseClient.from('user_stats').select('user_id').eq('email', friend_email).single();
       if (!friendRow || findError) {
-         toast('User not found. Invite them!', false, true);
-         return;
+        toast('User not found. Invite them!', false, true);
+        return;
       }
       const friend_id = friendRow.user_id;
       if (friend_id === currentUser.id) { toast('You cannot add yourself.', false, true); return; }
@@ -3705,48 +4035,92 @@
       if (error) { toast('Already requested or error.', false, true); }
       else { toast('Request Sent!', true); emailObj.value = ''; }
     }
-    
+
     async function acceptFriendRequest(req_id, sender_id) {
-       if (!supabaseClient || !currentUser) return;
-       await supabaseClient.from('friend_requests').update({ status: 'accepted' }).eq('id', req_id);
-       await supabaseClient.from('friends').insert([
-          { user_id: currentUser.id, friend_id: sender_id },
-          { user_id: sender_id, friend_id: currentUser.id }
-       ]);
-       toast('Friend added!', true);
-       loadSocialData();
-    }
-    
-    window.fetchLeaderboard = async function() {
       if (!supabaseClient || !currentUser) return;
-      
+      await supabaseClient.from('friend_requests').update({ status: 'accepted' }).eq('id', req_id);
+      await supabaseClient.from('friends').insert([
+        { user_id: currentUser.id, friend_id: sender_id },
+        { user_id: sender_id, friend_id: currentUser.id }
+      ]);
+      toast('Friend added!', true);
+      loadSocialData();
+    }
+
+    function lbPtrDown(e) {
+      if (!e.isPrimary) return;
+      const el = e.currentTarget;
+      document.querySelectorAll('.lb-swipe.show-delete').forEach((o) => { if (o !== el) o.classList.remove('show-delete'); });
+      el.dataset.lbx0 = String(e.clientX);
+      el._lbActive = true;
+      try { el.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+    }
+
+    function lbPtrMove(e) {
+      const el = e.currentTarget;
+      if (!el._lbActive || el.dataset.lbx0 === undefined) return;
+      const delta = e.clientX - Number(el.dataset.lbx0);
+      if (delta < -44) el.classList.add('show-delete');
+      if (delta > 32) el.classList.remove('show-delete');
+    }
+
+    function lbPtrUp(e) {
+      const el = e.currentTarget;
+      if (!el._lbActive) return;
+      el._lbActive = false;
+      if (el.dataset.lbx0 === undefined) return;
+      const delta = e.clientX - Number(el.dataset.lbx0);
+      if (delta < -44) el.classList.add('show-delete');
+      if (delta > -28) el.classList.remove('show-delete');
+      delete el.dataset.lbx0;
+      try { el.releasePointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+    }
+
+    async function confirmRemoveFriend(friendId) {
+      if (!supabaseClient || !currentUser || !friendId) return;
+      if (!window.confirm('Remove this friend from your leaderboard? You can add them again anytime.')) return;
+      const { error: e1 } = await supabaseClient.from('friends').delete().match({ user_id: currentUser.id, friend_id: friendId });
+      const { error: e2 } = await supabaseClient.from('friends').delete().match({ user_id: friendId, friend_id: currentUser.id });
+      if (e1 || e2) {
+        console.error(e1 || e2);
+        toast('COULD NOT REMOVE FRIEND', false, true);
+        return;
+      }
+      toast('Friend removed', true);
+      loadSocialData();
+    }
+
+    window.fetchLeaderboard = async function () {
+      if (!supabaseClient || !currentUser) return;
+
       const { data: friends } = await supabaseClient.from('friends').select('friend_id').eq('user_id', currentUser.id);
       let userIds = [currentUser.id];
       if (friends) {
-         userIds = userIds.concat(friends.map(f => f.friend_id));
+        userIds = userIds.concat(friends.map(f => f.friend_id));
       }
-      
+
       const { data: stats } = await supabaseClient.from('user_stats').select('user_id, email, xp, level, streak').in('user_id', userIds).order('xp', { ascending: false });
-      
+
       const listEl = document.getElementById('lb-list');
       if (stats && stats.length > 0) {
-         listEl.innerHTML = stats.map((s, index) => {
-            const isMe = s.user_id === currentUser.id;
-            let name = isMe ? 'YOU' : 'Friend';
-            if (!isMe && s.email) {
-               name = s.email.split('@')[0].toUpperCase();
-            } else if (!isMe) {
-               name = 'UID:' + s.user_id.slice(-4);
-            }
-            const rankEmoji = index === 0 ? '🥇' : (index === 1 ? '🥈' : (index === 2 ? '🥉' : null));
-            const rankNum = rankEmoji ? `<span style="font-size:18px">${rankEmoji}</span>` : `<span style="font-size:18px; font-family:'Bebas Neue'; color:var(--text2); width:24px; display:inline-block; text-align:center">${index + 1}</span>`;
-            const borderLeft = isMe ? 'border-left: 3px solid var(--green);' : 'border-left: 3px solid transparent;';
-            const rowBg = isMe ? 'background:var(--surface2);' : 'background:transparent;';
-            const namePart = isMe
-              ? `<span style="font-size:15px; font-weight:800; letter-spacing:0.5px; color:var(--text)">YOU</span>`
-              : `<span style="font-size:15px; font-weight:700; letter-spacing:0.5px; color:var(--text)">${name}</span>`;
-            return `
-              <div style="${rowBg} ${borderLeft} padding:12px 16px; display:flex; align-items:center; gap:14px; ${index < (stats.length - 1) ? 'border-bottom:1px solid var(--surface3)' : ''}">
+        listEl.innerHTML = stats.map((s, index) => {
+          const isMe = s.user_id === currentUser.id;
+          let name = isMe ? 'YOU' : 'Friend';
+          if (!isMe && s.email) {
+            name = s.email.split('@')[0].toUpperCase();
+          } else if (!isMe) {
+            name = 'UID:' + s.user_id.slice(-4);
+          }
+          const rankEmoji = index === 0 ? '🥇' : (index === 1 ? '🥈' : (index === 2 ? '🥉' : null));
+          const rankNum = rankEmoji ? `<span style="font-size:18px">${rankEmoji}</span>` : `<span style="font-size:18px; font-family:'Bebas Neue'; color:var(--text2); width:24px; display:inline-block; text-align:center">${index + 1}</span>`;
+          const borderLeft = isMe ? 'border-left: 3px solid var(--green);' : 'border-left: 3px solid transparent;';
+          const rowBg = isMe ? 'background:var(--surface2);' : 'background:transparent;';
+          const namePart = isMe
+            ? `<span style="font-size:15px; font-weight:800; letter-spacing:0.5px; color:var(--text)">YOU</span>`
+            : `<span style="font-size:15px; font-weight:700; letter-spacing:0.5px; color:var(--text)">${name}</span>`;
+          const bb = index < (stats.length - 1) ? 'border-bottom:1px solid var(--surface3);' : '';
+          const inner = `
+                 <div class="lb-row-inner" style="${rowBg} ${borderLeft}">
                  <div style="width:28px; text-align:center; flex-shrink:0">${rankNum}</div>
                  <div style="flex:1; min-width:0">
                     <div style="display:flex; gap:8px; align-items:center">
@@ -3756,11 +4130,20 @@
                     <div style="font-size:11px; color:var(--text3); margin-top:3px"><i class="fa-solid fa-fire" style="color:var(--green); font-size:9px; margin-right:3px"></i>${s.streak} day streak</div>
                  </div>
                  <div style="font-family:'Space Mono'; font-weight:700; color:var(--text); font-size:17px; flex-shrink:0">${s.xp}<span style="font-size:10px; color:var(--text2); font-weight:400; margin-left:3px">XP</span></div>
-              </div>
-            `;
-         }).join('');
+                 </div>`;
+          if (isMe) {
+            return `<div style="${bb}">${inner}</div>`;
+          }
+          const fid = escapeAttr(s.user_id);
+          return `
+              <div class="lb-swipe" data-friend-id="${fid}" style="${bb}"
+                onpointerdown="lbPtrDown(event)" onpointermove="lbPtrMove(event)" onpointerup="lbPtrUp(event)" onpointercancel="lbPtrUp(event)">
+                ${inner}
+                <button type="button" class="lb-fremove" onclick="event.stopPropagation();confirmRemoveFriend('${fid}')">Remove</button>
+              </div>`;
+        }).join('');
       } else {
-         listEl.innerHTML = `<div style="color:var(--text2); font-size:13px; text-align:center; padding:16px">No friends yet — add one above!</div>`;
+        listEl.innerHTML = `<div style="color:var(--text2); font-size:13px; text-align:center; padding:16px">No friends yet — add one above!</div>`;
       }
     };
 
