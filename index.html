@@ -1110,8 +1110,8 @@
 
     .run-finish-title {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 34px;
-      letter-spacing: 1.5px;
+      font-size: 38px;
+      letter-spacing: 1.2px;
       line-height: 1
     }
 
@@ -1158,6 +1158,11 @@
       display: flex;
       gap: 8px;
       margin-top: 14px
+    }
+
+    .run-finish-exporting .run-finish-actions,
+    .run-finish-exporting .run-close-btn {
+      display: none !important
     }
 
     .run-finish-actions .sbtn {
@@ -2618,10 +2623,10 @@
       <div class="run-finish-card" id="run-finish-card">
         <div class="run-finish-head">
           <div>
-            <div class="run-finish-title">RUN COMPLETE</div>
+            <div class="run-finish-title">FORGE RUN COMPLETE</div>
             <div class="run-finish-sub" id="run-finish-sub">Session saved</div>
           </div>
-          <button class="icon-btn" onclick="closeRunFinishModal()" aria-label="Close run summary"><i
+          <button class="icon-btn run-close-btn" onclick="closeRunFinishModal()" aria-label="Close run summary"><i
               class="fa-solid fa-xmark"></i></button>
         </div>
         <div id="run-finish-map" class="run-map popup"></div>
@@ -2895,7 +2900,9 @@
     let runTrackingActive = false;
     let runSupabaseEnabled = true;
     let runPreviewRow = null;
-    const APP_VERSION = '3.7.1';
+    let runPausedAccumMs = 0;
+    let runPauseBeganAt = null;
+    const APP_VERSION = '3.7.2';
     const FOOD_AI_API_URL = window.FORGE_AI_API_URL || 'http://127.0.0.1:5001/api/food/analyze';
     const AI_COACH_API_URL = window.FORGE_AI_COACH_URL || 'http://127.0.0.1:5001/api/health/coach';
     const SUPABASE_URL = window.ARCHITECT_SUPABASE_URL || '';
@@ -2934,12 +2941,19 @@
     }
     function formatPace(secPerKm) {
       if (!Number.isFinite(secPerKm) || secPerKm <= 0) return '--:--';
-      const mins = Math.floor(secPerKm / 60);
-      const secs = Math.round(secPerKm % 60);
+      const rounded = Math.max(1, Math.round(secPerKm));
+      const mins = Math.floor(rounded / 60);
+      const secs = rounded % 60;
       return `${S(mins)}:${S(secs)}`;
     }
     function estimateRunSteps(distanceKm) { return Math.round(Math.max(0, Number(distanceKm) || 0) * 1300); }
     function estimateRunCalories(distanceKm) { return Math.round(Math.max(0, Number(distanceKm) || 0) * 60); }
+    function getRunElapsedSec(nowMs = Date.now()) {
+      if (!runStartedAt) return 0;
+      const pausedNow = runPauseBeganAt ? (nowMs - runPauseBeganAt) : 0;
+      const elapsedMs = Math.max(0, nowMs - runStartedAt - runPausedAccumMs - pausedNow);
+      return Math.floor(elapsedMs / 1000);
+    }
     function haversineKm(a, b) {
       const toRad = deg => deg * Math.PI / 180;
       const R = 6371;
@@ -4605,9 +4619,10 @@
       const mapEl = document.getElementById('run-finish-map');
       if (!mapEl) return null;
       runMap = L.map(mapEl, { zoomControl: false, attributionControl: true }).setView([-33.8688, 151.2093], 14);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
         maxZoom: 19,
-        attribution: '&copy; OpenStreetMap'
+        subdomains: 'abcd',
+        attribution: '&copy; OpenStreetMap &copy; CARTO'
       }).addTo(runMap);
       runHistoryLayer = L.layerGroup().addTo(runMap);
       return runMap;
@@ -4624,7 +4639,7 @@
     }
 
     function updateRunMetrics() {
-      const durationSec = runStartedAt ? Math.max(0, Math.floor((Date.now() - runStartedAt) / 1000)) : 0;
+      const durationSec = getRunElapsedSec();
       const paceSec = runDistanceKm > 0 ? durationSec / runDistanceKm : 0;
       const steps = estimateRunSteps(runDistanceKm);
       const calories = estimateRunCalories(runDistanceKm);
@@ -4655,6 +4670,8 @@
       runDistanceKm = 0;
       runStartedAt = null;
       runLastPoint = null;
+      runPausedAccumMs = 0;
+      runPauseBeganAt = null;
       runTrackingActive = false;
       if (runHistoryLayer) runHistoryLayer.clearLayers();
       setRunStatus('READY TO TRACK', false);
@@ -4728,9 +4745,9 @@
       document.getElementById('run-finish-pace').textContent = formatPace(row.Avg_Pace_Sec_Per_Km);
       document.getElementById('run-finish-steps').textContent = fmt(row.Estimated_Steps || 0);
       if (!coords.length) return;
-      const poly = L.polyline(coords, { color: '#ffffff', weight: 4, opacity: .9 }).addTo(runHistoryLayer);
-      L.circleMarker(coords[0], { radius: 6, color: '#050505', fillColor: '#c8ff00', fillOpacity: 1 }).addTo(runHistoryLayer);
-      L.circleMarker(coords[coords.length - 1], { radius: 6, color: '#050505', fillColor: '#ffffff', fillOpacity: 1 }).addTo(runHistoryLayer);
+      const poly = L.polyline(coords, { color: '#c8ff00', weight: 5, opacity: .95, lineCap: 'round', lineJoin: 'round' }).addTo(runHistoryLayer);
+      L.circleMarker(coords[0], { radius: 7, color: '#050505', weight: 2, fillColor: '#c8ff00', fillOpacity: 1 }).addTo(runHistoryLayer);
+      L.circleMarker(coords[coords.length - 1], { radius: 7, color: '#050505', weight: 2, fillColor: '#111111', fillOpacity: 1 }).addTo(runHistoryLayer);
       map.fitBounds(poly.getBounds(), { padding: [18, 18] });
       setTimeout(() => map.invalidateSize(), 60);
     }
@@ -4750,12 +4767,17 @@
         toast('IMAGE EXPORT UNAVAILABLE', false, true);
         return;
       }
-      const canvas = await window.html2canvas(card, { backgroundColor: '#111111', scale: 2, useCORS: true });
-      const link = document.createElement('a');
-      const stamp = (runPreviewRow?.Date || TODAY).replace(/[^0-9-]/g, '');
-      link.download = `forge-run-${stamp}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
+      try {
+        card.classList.add('run-finish-exporting');
+        const canvas = await window.html2canvas(card, { backgroundColor: '#111111', scale: 2, useCORS: true });
+        const link = document.createElement('a');
+        const stamp = (runPreviewRow?.Date || TODAY).replace(/[^0-9-]/g, '');
+        link.download = `forge-run-${stamp}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } finally {
+        card.classList.remove('run-finish-exporting');
+      }
     };
 
     function beginRunWatch() {
@@ -4825,6 +4847,7 @@
       if (runTrackingActive) {
         stopRunWatch();
         runTrackingActive = false;
+        runPauseBeganAt = Date.now();
         if (runTickInterval) {
           clearInterval(runTickInterval);
           runTickInterval = null;
@@ -4834,6 +4857,10 @@
         return;
       }
       runTrackingActive = true;
+      if (runPauseBeganAt) {
+        runPausedAccumMs += Date.now() - runPauseBeganAt;
+        runPauseBeganAt = null;
+      }
       if (!runStartedAt) runStartedAt = Date.now();
       setRunStatus(runGpsEnabled ? (runSessionPoints.length ? 'RESUMING GPS...' : 'SEARCHING FOR GPS...') : 'GPS OFF - TIMER ONLY', false);
       beginRunWatch();
@@ -4854,7 +4881,7 @@
       }
       runTrackingActive = false;
       const endTimestamp = new Date().toISOString();
-      const durationSec = Math.max(1, Math.floor((new Date(endTimestamp).getTime() - runStartedAt) / 1000));
+      const durationSec = Math.max(1, getRunElapsedSec(new Date(endTimestamp).getTime()));
       const paceSec = runDistanceKm > 0 ? Math.round(durationSec / runDistanceKm) : 0;
       const row = {
         ID: DB.runLog.length ? Math.max(...DB.runLog.map(item => Number(item.ID) || 0)) + 1 : 1,
