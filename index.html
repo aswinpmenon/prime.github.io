@@ -73,6 +73,32 @@
       touch-action: manipulation
     }
 
+    
+    /* ── ROUTINE ─────────────────────────────────────────── */
+    .timeline-list { margin-top: 14px; position: relative; border-left: 1px solid var(--border); margin-left: 60px; padding-left: 20px; padding-bottom: 20px;}
+    .t-row { position: relative; margin-bottom: 16px; opacity: 0.6; transition: opacity 0.3s; }
+    .t-row.active { opacity: 1; }
+    .t-row.done .t-title { text-decoration: line-through; color: var(--text3); }
+    .t-row.done .t-sub { text-decoration: line-through; color: var(--text3); }
+    .t-time { position: absolute; left: -80px; width: 50px; text-align: right; font-family: 'Space Mono', monospace; font-size: 10px; color: var(--text2); top: 12px; }
+    .t-content { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; cursor: pointer; transition: transform 0.15s, border-color 0.2s; -webkit-tap-highlight-color: transparent; }
+    .t-content:active { transform: scale(0.98); }
+    .t-content:hover { border-color: var(--border2); }
+    .t-dot { width: 12px; height: 12px; border-radius: 50%; position: absolute; left: -26px; top: 12px; background: var(--border2); border: 2px solid var(--bg); box-sizing: content-box; }
+    .t-dot.d-sleep { background: #ED93B1; }
+    .t-dot.d-wake { background: #FAC775; }
+    .t-dot.d-gym { background: #85B7EB; }
+    .t-dot.d-cardio { background: #97C459; }
+    .t-dot.d-work { background: #B4B2A9; }
+    .t-dot.d-meal { background: #5DCAA5; }
+    .t-dot.d-rest { background: #D3D1C7; }
+    .t-title { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 600; color: var(--text); letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center; }
+    .t-sub { font-size: 12px; color: var(--text2); margin-top: 4px; }
+    .t-check { width: 20px; height: 20px; border-radius: 4px; border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; color: transparent; transition: all 0.2s; }
+    .t-row.done .t-check { background: var(--green); border-color: var(--green); color: #000; }
+    .routine-dashboard-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; position: relative; overflow: hidden; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .routine-dashboard-card:active { transform: scale(0.98); }
+
     /* ── SCREENS ─────────────────────────────────────────── */
     .screen {
       position: absolute;
@@ -2527,6 +2553,24 @@
     </div>
 
     <!-- ════════ SCREEN: DASHBOARD ════════ -->
+    
+    <div class="screen" id="s-today-routine">
+      <div class="topbar">
+        <button class="back-btn" onclick="go('dashboard')"><i class="fa-solid fa-arrow-left"></i>HOME</button>
+        <div class="brand"><img src="./forgewhitee.png" alt="FORGE" class="brand-logo"></div>
+        <div style="width:36px"></div>
+      </div>
+      <div class="scroll">
+        <div class="phase">YOUR ROUTINE</div>
+        <div class="h1">TODAY.</div>
+        <div class="desc" id="routine-day-desc">Loading your schedule...</div>
+        
+        <div class="timeline-list" id="routine-timeline">
+            <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
     <div class="screen" id="s-dashboard">
       <div class="topbar">
         <div class="brand">
@@ -2544,6 +2588,18 @@
       <div class="scroll">
         <div class="phase">DASHBOARD_01</div>
         <div class="h1">WELCOME,<br><span id="dash-name">ATHLETE</span>.</div>
+        
+        <div class="routine-dashboard-card" onclick="go('today-routine')">
+          <div class="ghost dashboard-ghost" style="font-size:60px; right:10px; top:10px;"><i class="fa-solid fa-calendar-day"></i></div>
+          <div class="pcard-lbl">TODAY'S ROUTINE</div>
+          <div class="pcard-sub" id="dash-routine-tag">LOADING...</div>
+          <div style="font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--green); margin-bottom: 4px; line-height: 1" id="dash-routine-next">UP NEXT: --</div>
+          <div style="font-size: 13px; color: var(--text2);" id="dash-routine-meta">-- completed</div>
+          <div class="bar-track" style="margin-top: 12px;">
+            <div class="bar-fill" id="dash-routine-bar" style="width: 0%"></div>
+          </div>
+        </div>
+
         <div class="pcard">
           <div class="ghost dashboard-ghost">01</div>
           <div class="pcard-lbl">DAILY PROGRESS</div>
@@ -2723,6 +2779,18 @@
       <div class="scroll">
         <div class="phase">DASHBOARD_02</div>
         <div class="h1b">DAILY<br>PROGRESS.</div>
+        
+        <div class="routine-dashboard-card" onclick="go('today-routine')">
+          <div class="ghost dashboard-ghost" style="font-size:60px; right:10px; top:10px;"><i class="fa-solid fa-calendar-day"></i></div>
+          <div class="pcard-lbl">TODAY'S ROUTINE</div>
+          <div class="pcard-sub" id="dash-routine-tag">LOADING...</div>
+          <div style="font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--green); margin-bottom: 4px; line-height: 1" id="dash-routine-next">UP NEXT: --</div>
+          <div style="font-size: 13px; color: var(--text2);" id="dash-routine-meta">-- completed</div>
+          <div class="bar-track" style="margin-top: 12px;">
+            <div class="bar-fill" id="dash-routine-bar" style="width: 0%"></div>
+          </div>
+        </div>
+
         <div class="pcard">
           <div class="ghost" id="dp-ghost">0</div>
           <div class="pcard-lbl">TODAY'S CALORIES</div>
@@ -3044,8 +3112,8 @@
             class="fa-solid fa-utensils"></i></span><span class="ni-label">Cals</span></button>
       <button class="ni" onclick="go('record-workout')"><span class="ni-icon"><i
             class="fa-solid fa-dumbbell"></i></span><span class="ni-label">Gym</span></button>
-      <button class="ni" onclick="go('track-run')"><span class="ni-icon"><i
-            class="fa-solid fa-person-running"></i></span><span class="ni-label">Run</span></button>
+      <button class="ni" onclick="go('today-routine')"><span class="ni-icon"><i
+            class="fa-solid fa-calendar-day"></i></span><span class="ni-label">Today</span></button>
       <button class="ni" onclick="go('leaderboard')"><span class="ni-icon"><i
             class="fa-solid fa-gamepad"></i></span><span class="ni-label">Social</span></button>
     </div>
@@ -3156,7 +3224,577 @@
     let runPreviewRow = null;
     let runPausedAccumMs = 0;
     let runPauseBeganAt = null;
-    const APP_VERSION = '3.7.5';
+    const APP_VERSION = '4.0';
+const WEEKLY_ROUTINE = {
+  "mon": {
+    "tag": "Free day",
+    "blocks": [
+      {
+        "id": "mon-1130pm",
+        "time": "11:30 PM",
+        "type": "sleep",
+        "title": "Bedtime (prev Sun)",
+        "subtitle": "target 8 hrs"
+      },
+      {
+        "id": "mon-730am",
+        "time": "7:30 AM",
+        "type": "wake",
+        "title": "Wake up",
+        "subtitle": "8 hrs sleep"
+      },
+      {
+        "id": "mon-745am",
+        "time": "7:45 AM",
+        "type": "meal",
+        "title": "Pre-workout meal \u2014 rice + chicken",
+        "subtitle": ""
+      },
+      {
+        "id": "mon-815am",
+        "time": "8:15 AM",
+        "type": "cardio",
+        "title": "Cardio \u2014 30 min treadmill/bike (gym)",
+        "subtitle": ""
+      },
+      {
+        "id": "mon-850am",
+        "time": "8:50 AM",
+        "type": "gym",
+        "title": "Abs circuit \u2014 15 min",
+        "subtitle": ""
+      },
+      {
+        "id": "mon-930am",
+        "time": "9:30 AM",
+        "type": "meal",
+        "title": "Post-workout shake (NitroTech + banana)",
+        "subtitle": ""
+      },
+      {
+        "id": "mon-100pm",
+        "time": "1:00 PM",
+        "type": "meal",
+        "title": "Lunch \u2014 chicken curry + rice",
+        "subtitle": ""
+      },
+      {
+        "id": "mon-430pm",
+        "time": "4:30 PM",
+        "type": "meal",
+        "title": "Snack \u2014 Greek yogurt + nuts",
+        "subtitle": ""
+      },
+      {
+        "id": "mon-730pm",
+        "time": "7:30 PM",
+        "type": "meal",
+        "title": "Dinner \u2014 chicken + roti + dal",
+        "subtitle": ""
+      },
+      {
+        "id": "mon-1030pm",
+        "time": "10:30 PM",
+        "type": "meal",
+        "title": "Before bed \u2014 cottage cheese / paneer",
+        "subtitle": ""
+      },
+      {
+        "id": "mon-1100pm",
+        "time": "11:00 PM",
+        "type": "sleep",
+        "title": "Bedtime",
+        "subtitle": "target 8 hrs"
+      }
+    ]
+  },
+  "tue": {
+    "tag": "Work 4:30\u20139:30 PM",
+    "blocks": [
+      {
+        "id": "tue-1100pm",
+        "time": "11:00 PM",
+        "type": "sleep",
+        "title": "Bedtime (Mon)",
+        "subtitle": "8 hrs planned"
+      },
+      {
+        "id": "tue-700am",
+        "time": "7:00 AM",
+        "type": "wake",
+        "title": "Wake up",
+        "subtitle": "8 hrs sleep"
+      },
+      {
+        "id": "tue-715am",
+        "time": "7:15 AM",
+        "type": "meal",
+        "title": "Pre-workout \u2014 oats + NitroTech shake",
+        "subtitle": ""
+      },
+      {
+        "id": "tue-800am",
+        "time": "8:00 AM",
+        "type": "gym",
+        "title": "Gym \u2014 Pull day (back + biceps) ~65 min",
+        "subtitle": ""
+      },
+      {
+        "id": "tue-915am",
+        "time": "9:15 AM",
+        "type": "meal",
+        "title": "Post-workout shake",
+        "subtitle": ""
+      },
+      {
+        "id": "tue-1230pm",
+        "time": "12:30 PM",
+        "type": "meal",
+        "title": "Lunch \u2014 chicken rice + veggies (batch cooked)",
+        "subtitle": ""
+      },
+      {
+        "id": "tue-330pm",
+        "time": "3:30 PM",
+        "type": "meal",
+        "title": "Pre-work meal \u2014 packed chicken box",
+        "subtitle": ""
+      },
+      {
+        "id": "tue-430pm",
+        "time": "4:30 PM",
+        "type": "work",
+        "title": "Work shift starts",
+        "subtitle": ""
+      },
+      {
+        "id": "tue-930pm",
+        "time": "9:30 PM",
+        "type": "work",
+        "title": "Work ends",
+        "subtitle": ""
+      },
+      {
+        "id": "tue-1000pm",
+        "time": "10:00 PM",
+        "type": "rest",
+        "title": "Home \u2014 change, relax briefly",
+        "subtitle": ""
+      },
+      {
+        "id": "tue-1015pm",
+        "time": "10:15 PM",
+        "type": "meal",
+        "title": "Dinner \u2014 reheated chicken + roti (prepped)",
+        "subtitle": ""
+      },
+      {
+        "id": "tue-1045pm",
+        "time": "10:45 PM",
+        "type": "rest",
+        "title": "Wind down \u2014 no screens",
+        "subtitle": ""
+      },
+      {
+        "id": "tue-1130pm",
+        "time": "11:30 PM",
+        "type": "sleep",
+        "title": "Bedtime",
+        "subtitle": "7.5 hrs to Wed 7 AM"
+      }
+    ]
+  },
+  "wed": {
+    "tag": "Work 4:30\u20139:30 PM",
+    "blocks": [
+      {
+        "id": "wed-1130pm",
+        "time": "11:30 PM",
+        "type": "sleep",
+        "title": "Bedtime (Tue)",
+        "subtitle": "7.5 hrs"
+      },
+      {
+        "id": "wed-700am",
+        "time": "7:00 AM",
+        "type": "wake",
+        "title": "Wake up",
+        "subtitle": ""
+      },
+      {
+        "id": "wed-715am",
+        "time": "7:15 AM",
+        "type": "meal",
+        "title": "Pre-workout \u2014 oats + NitroTech",
+        "subtitle": ""
+      },
+      {
+        "id": "wed-800am",
+        "time": "8:00 AM",
+        "type": "gym",
+        "title": "Gym \u2014 Legs day ~70 min",
+        "subtitle": ""
+      },
+      {
+        "id": "wed-920am",
+        "time": "9:20 AM",
+        "type": "meal",
+        "title": "Post-workout shake",
+        "subtitle": ""
+      },
+      {
+        "id": "wed-1230pm",
+        "time": "12:30 PM",
+        "type": "meal",
+        "title": "Lunch \u2014 chicken + rice + rasam",
+        "subtitle": ""
+      },
+      {
+        "id": "wed-330pm",
+        "time": "3:30 PM",
+        "type": "meal",
+        "title": "Pre-work meal \u2014 packed chicken box",
+        "subtitle": ""
+      },
+      {
+        "id": "wed-430pm",
+        "time": "4:30 PM",
+        "type": "work",
+        "title": "Work shift starts",
+        "subtitle": ""
+      },
+      {
+        "id": "wed-930pm",
+        "time": "9:30 PM",
+        "type": "work",
+        "title": "Work ends",
+        "subtitle": ""
+      },
+      {
+        "id": "wed-1000pm",
+        "time": "10:00 PM",
+        "type": "rest",
+        "title": "Home",
+        "subtitle": ""
+      },
+      {
+        "id": "wed-1015pm",
+        "time": "10:15 PM",
+        "type": "meal",
+        "title": "Dinner \u2014 prepped chicken + roti",
+        "subtitle": ""
+      },
+      {
+        "id": "wed-1130pm",
+        "time": "11:30 PM",
+        "type": "sleep",
+        "title": "Bedtime",
+        "subtitle": "7.5 hrs to Thu 7 AM"
+      }
+    ]
+  },
+  "thu": {
+    "tag": "Work 10 AM\u20132 PM",
+    "blocks": [
+      {
+        "id": "thu-1130pm",
+        "time": "11:30 PM",
+        "type": "sleep",
+        "title": "Bedtime (Wed)",
+        "subtitle": "7.5 hrs"
+      },
+      {
+        "id": "thu-700am",
+        "time": "7:00 AM",
+        "type": "wake",
+        "title": "Wake up",
+        "subtitle": ""
+      },
+      {
+        "id": "thu-710am",
+        "time": "7:10 AM",
+        "type": "meal",
+        "title": "Light pre-cardio \u2014 banana",
+        "subtitle": ""
+      },
+      {
+        "id": "thu-730am",
+        "time": "7:30 AM",
+        "type": "cardio",
+        "title": "Cardio \u2014 25 min treadmill + abs 10 min",
+        "subtitle": ""
+      },
+      {
+        "id": "thu-815am",
+        "time": "8:15 AM",
+        "type": "meal",
+        "title": "Post-cardio shake + get ready for work",
+        "subtitle": ""
+      },
+      {
+        "id": "thu-1000am",
+        "time": "10:00 AM",
+        "type": "work",
+        "title": "Work starts",
+        "subtitle": ""
+      },
+      {
+        "id": "thu-200pm",
+        "time": "2:00 PM",
+        "type": "work",
+        "title": "Work ends",
+        "subtitle": ""
+      },
+      {
+        "id": "thu-230pm",
+        "time": "2:30 PM",
+        "type": "gym",
+        "title": "Gym \u2014 Push day (chest + shoulders) ~70 min",
+        "subtitle": ""
+      },
+      {
+        "id": "thu-400pm",
+        "time": "4:00 PM",
+        "type": "meal",
+        "title": "Post-gym shake + lunch (big meal)",
+        "subtitle": ""
+      },
+      {
+        "id": "thu-730pm",
+        "time": "7:30 PM",
+        "type": "meal",
+        "title": "Dinner \u2014 chicken stir fry + roti",
+        "subtitle": ""
+      },
+      {
+        "id": "thu-1100pm",
+        "time": "11:00 PM",
+        "type": "sleep",
+        "title": "Bedtime",
+        "subtitle": "8.5 hrs to Fri 7:30 AM"
+      }
+    ]
+  },
+  "fri": {
+    "tag": "Work 9 AM\u20133 PM",
+    "blocks": [
+      {
+        "id": "fri-1100pm",
+        "time": "11:00 PM",
+        "type": "sleep",
+        "title": "Bedtime (Thu)",
+        "subtitle": "8.5 hrs"
+      },
+      {
+        "id": "fri-730am",
+        "time": "7:30 AM",
+        "type": "wake",
+        "title": "Wake up",
+        "subtitle": "8.5 hrs sleep"
+      },
+      {
+        "id": "fri-745am",
+        "time": "7:45 AM",
+        "type": "meal",
+        "title": "Breakfast \u2014 oats + NitroTech shake",
+        "subtitle": ""
+      },
+      {
+        "id": "fri-900am",
+        "time": "9:00 AM",
+        "type": "work",
+        "title": "Work starts",
+        "subtitle": ""
+      },
+      {
+        "id": "fri-1200pm",
+        "time": "12:00 PM",
+        "type": "meal",
+        "title": "Work lunch \u2014 packed chicken box",
+        "subtitle": ""
+      },
+      {
+        "id": "fri-300pm",
+        "time": "3:00 PM",
+        "type": "work",
+        "title": "Work ends",
+        "subtitle": ""
+      },
+      {
+        "id": "fri-330pm",
+        "time": "3:30 PM",
+        "type": "gym",
+        "title": "Gym \u2014 Pull day + abs ~75 min",
+        "subtitle": "best session of week"
+      },
+      {
+        "id": "fri-500pm",
+        "time": "5:00 PM",
+        "type": "meal",
+        "title": "Post-gym shake + snack",
+        "subtitle": ""
+      },
+      {
+        "id": "fri-800pm",
+        "time": "8:00 PM",
+        "type": "meal",
+        "title": "Dinner \u2014 chicken biriyani-style rice or curry",
+        "subtitle": ""
+      },
+      {
+        "id": "fri-1030pm",
+        "time": "10:30 PM",
+        "type": "sleep",
+        "title": "Bedtime",
+        "subtitle": "7 hrs to Sat 5:30 AM"
+      }
+    ]
+  },
+  "sat": {
+    "tag": "Work 6 AM\u20133 PM",
+    "blocks": [
+      {
+        "id": "sat-1030pm",
+        "time": "10:30 PM",
+        "type": "sleep",
+        "title": "Bedtime (Fri)",
+        "subtitle": "7 hrs sleep"
+      },
+      {
+        "id": "sat-530am",
+        "time": "5:30 AM",
+        "type": "wake",
+        "title": "Wake up \u2014 quick meal, no gym",
+        "subtitle": ""
+      },
+      {
+        "id": "sat-545am",
+        "time": "5:45 AM",
+        "type": "meal",
+        "title": "Early meal \u2014 banana + NitroTech shake",
+        "subtitle": ""
+      },
+      {
+        "id": "sat-600am",
+        "time": "6:00 AM",
+        "type": "work",
+        "title": "Work starts (long shift)",
+        "subtitle": ""
+      },
+      {
+        "id": "sat-1000am",
+        "time": "10:00 AM",
+        "type": "meal",
+        "title": "Mid-shift meal \u2014 packed chicken box",
+        "subtitle": ""
+      },
+      {
+        "id": "sat-100pm",
+        "time": "1:00 PM",
+        "type": "meal",
+        "title": "Packed snack \u2014 yogurt + nuts",
+        "subtitle": ""
+      },
+      {
+        "id": "sat-300pm",
+        "time": "3:00 PM",
+        "type": "work",
+        "title": "Work ends",
+        "subtitle": ""
+      },
+      {
+        "id": "sat-330pm",
+        "time": "3:30 PM",
+        "type": "rest",
+        "title": "Rest \u2014 full recovery, no training",
+        "subtitle": ""
+      },
+      {
+        "id": "sat-600pm",
+        "time": "6:00 PM",
+        "type": "meal",
+        "title": "Big recovery dinner \u2014 chicken curry + rice",
+        "subtitle": ""
+      },
+      {
+        "id": "sat-1000pm",
+        "time": "10:00 PM",
+        "type": "sleep",
+        "title": "Bedtime",
+        "subtitle": "9 hrs to Sun 7 AM"
+      }
+    ]
+  },
+  "sun": {
+    "tag": "Free + prep day",
+    "blocks": [
+      {
+        "id": "sun-1000pm",
+        "time": "10:00 PM",
+        "type": "sleep",
+        "title": "Bedtime (Sat)",
+        "subtitle": "9 hrs sleep"
+      },
+      {
+        "id": "sun-700am",
+        "time": "7:00 AM",
+        "type": "wake",
+        "title": "Wake up \u2014 best rested day",
+        "subtitle": ""
+      },
+      {
+        "id": "sun-715am",
+        "time": "7:15 AM",
+        "type": "meal",
+        "title": "Breakfast \u2014 puttu + kadala curry or oats",
+        "subtitle": ""
+      },
+      {
+        "id": "sun-830am",
+        "time": "8:30 AM",
+        "type": "gym",
+        "title": "Gym \u2014 Legs day ~70 min",
+        "subtitle": ""
+      },
+      {
+        "id": "sun-1000am",
+        "time": "10:00 AM",
+        "type": "meal",
+        "title": "Post-gym shake",
+        "subtitle": ""
+      },
+      {
+        "id": "sun-100pm",
+        "time": "1:00 PM",
+        "type": "meal",
+        "title": "Lunch \u2014 proper Kerala meal (rice + sambar + chicken)",
+        "subtitle": ""
+      },
+      {
+        "id": "sun-300pm",
+        "time": "3:00 PM",
+        "type": "rest",
+        "title": "Batch cook \u2014 600g chicken, rice, dal for week",
+        "subtitle": ""
+      },
+      {
+        "id": "sun-600pm",
+        "time": "6:00 PM",
+        "type": "meal",
+        "title": "Light dinner \u2014 chicken soup or stir fry",
+        "subtitle": ""
+      },
+      {
+        "id": "sun-1100pm",
+        "time": "11:00 PM",
+        "type": "sleep",
+        "title": "Bedtime",
+        "subtitle": "8 hrs to Mon 7 AM"
+      }
+    ]
+  }
+};
+
     const FOOD_AI_API_URL = window.FORGE_AI_API_URL || 'http://127.0.0.1:5001/api/food/analyze';
     const AI_COACH_API_URL = window.FORGE_AI_COACH_URL || 'http://127.0.0.1:5001/api/health/coach';
     const SUPABASE_URL = window.ARCHITECT_SUPABASE_URL || '';
@@ -3383,6 +4021,8 @@
 
     function onEnter(s) {
       if (s === 'dashboard') renderDash();
+          renderRoutine();
+          updateRoutineDashboard();
       if (s === 'record-calorie') { updateCalClock(); }
       if (s === 'record-workout') { updateWorkoutMeta(); }
       if (s === 'progress-daily') renderDaily();
@@ -3571,6 +4211,8 @@
           WB = buildStarterWB();
           parseWB(WB);
           renderDash();
+          renderRoutine();
+          updateRoutineDashboard();
           renderDaily();
           renderWeekly();
           renderRunScreen();
@@ -3645,6 +4287,8 @@
       if (!WB) WB = buildStarterWB();
       syncWB();
       renderDash();
+          renderRoutine();
+          updateRoutineDashboard();
       renderDaily();
       renderWeekly();
       renderRunScreen();
@@ -3755,6 +4399,8 @@
         syncWB();
         try { localStorage.removeItem('arch_wb'); } catch (e) { }
         renderDash();
+          renderRoutine();
+          updateRoutineDashboard();
         renderDaily();
         renderWeekly();
         renderRunScreen();
@@ -3780,6 +4426,8 @@
         DB.workoutLog = DB.workoutLog.filter(r => r.Date !== TODAY);
         syncWB();
         renderDash();
+          renderRoutine();
+          updateRoutineDashboard();
         renderDaily();
         renderWeekly();
         if (CUR === 'database') renderDB();
@@ -3799,6 +4447,8 @@
         DB.calLog = DB.calLog.filter(r => r.ID !== id);
         syncWB();
         renderDash();
+          renderRoutine();
+          updateRoutineDashboard();
         renderDaily();
         renderWeekly();
         if (CUR === 'database') renderDB();
@@ -3823,6 +4473,8 @@
         }
         syncWB();
         renderDash();
+          renderRoutine();
+          updateRoutineDashboard();
         renderDaily();
         renderWeekly();
         if (CUR === 'database') renderDB();
@@ -3841,6 +4493,8 @@
           if (supabaseClient) await seedSupabaseFromDB();
           toast('IMPORTED ✓', true);
           renderDash();
+          renderRoutine();
+          updateRoutineDashboard();
           if (CUR === 'database') renderDB();
         }
         catch (e) { toast('IMPORT FAILED', false, true); }
@@ -4033,6 +4687,8 @@
       updCalDisp();
       closeVoiceModal();
       renderDash();
+          renderRoutine();
+          updateRoutineDashboard();
       renderDaily();
       if (CUR === 'database') renderDB();
       toast(`${itemInput.toUpperCase()}: ${fmt(calorieInput)} KCAL LOGGED`, true);
@@ -4128,6 +4784,8 @@
       renderAiFoodResults();
       toast('AI CALORIES SAVED', true);
       renderDash();
+          renderRoutine();
+          updateRoutineDashboard();
       renderDaily();
     }
     async function submitCal() {
@@ -5451,6 +6109,184 @@
     // ══════════════════════════════════════════════
     //  INIT
     // ══════════════════════════════════════════════
+    
+    // --- ROUTINE LOGIC ---
+    let completedBlocks = new Set();
+
+    async function loadRoutineLog() {
+        if(!currentUser) return;
+        const today = new Date().toISOString().split('T')[0];
+        try {
+            const { data, error } = await supabaseClient.from('routine_log').select('block_id').eq('user_id', currentUser.id).eq('date', today);
+            if(!error && data) {
+                completedBlocks = new Set(data.map(d => d.block_id));
+            }
+        } catch(e) {}
+        renderRoutine();
+        updateRoutineDashboard();
+    }
+
+    async function toggleRoutineBlock(e, blockId, type, title) {
+        e.stopPropagation(); // prevent opening logger if clicking checkbox directly
+        if(!currentUser) {
+            toast("Log in to track routine", false, true);
+            return;
+        }
+        const today = new Date().toISOString().split('T')[0];
+        
+        if(completedBlocks.has(blockId)) {
+            toast("Already logged!");
+            return;
+        }
+
+        // Mark optimistic
+        completedBlocks.add(blockId);
+        renderRoutine();
+        updateRoutineDashboard();
+
+        // Save to db
+        try {
+            await supabaseClient.from('routine_log').insert({
+                user_id: currentUser.id,
+                block_id: blockId,
+                activity_type: type,
+                date: today
+            });
+            toast("Block completed!");
+        } catch(e) {}
+    }
+
+    function handleRoutineBlockClick(blockId, type, title, subtitle) {
+        if(type === 'meal') {
+            go('record-calorie');
+            document.getElementById('ai-input').value = title + " " + subtitle;
+            toast("Ready to analyze meal!");
+        } else if (type === 'gym') {
+            go('record-workout');
+            toast("Workout logger opened");
+        } else if (type === 'cardio') {
+            go('record-workout');
+        } else {
+            toggleRoutineBlock({stopPropagation:()=>{}}, blockId, type, title);
+        }
+    }
+
+    function getTodayKey() {
+        const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+        return days[new Date().getDay()];
+    }
+
+    function parseTime(timeStr) {
+        // convert "7:30 AM" to minutes since midnight for comparison
+        const [time, modifier] = timeStr.replace('*','').split(' ');
+        let [hours, minutes] = time.split(':');
+        hours = parseInt(hours, 10);
+        minutes = parseInt(minutes, 10);
+        if (hours === 12) { hours = 0; }
+        if (modifier === 'PM') { hours += 12; }
+        return hours * 60 + minutes;
+    }
+
+    function renderRoutine() {
+        const key = getTodayKey();
+        const dayPlan = WEEKLY_ROUTINE[key];
+        const container = document.getElementById('routine-timeline');
+        if(!container) return;
+        
+        document.getElementById('routine-day-desc').textContent = dayPlan.tag;
+        
+        let html = '';
+        const now = new Date();
+        const currentMins = now.getHours() * 60 + now.getMinutes();
+
+        dayPlan.blocks.forEach(b => {
+            const isDone = completedBlocks.has(b.id);
+            const blockMins = parseTime(b.time);
+            const isActive = Math.abs(currentMins - blockMins) <= 120 || (currentMins < 120 && blockMins > 1320); // rough heuristic, including midnight wrap
+            
+            html += `
+                <div class="t-row ${isDone ? 'done' : ''} ${isActive ? 'active' : ''}">
+                    <div class="t-time">${b.time}</div>
+                    <div class="t-dot d-${b.type}"></div>
+                    <div class="t-content" onclick="handleRoutineBlockClick('${b.id}', '${b.type}', '${b.title.replace(/'/g,"\\'")}', '${b.subtitle.replace(/'/g,"\\'")}')">
+                        <div class="t-title">
+                            ${b.title}
+                            <div class="t-check" onclick="toggleRoutineBlock(event, '${b.id}', '${b.type}', '${b.title.replace(/'/g,"\\'")}')"><i class="fa-solid fa-check"></i></div>
+                        </div>
+                        ${b.subtitle ? `<div class="t-sub">${b.subtitle}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    function updateRoutineDashboard() {
+        const key = getTodayKey();
+        const dayPlan = WEEKLY_ROUTINE[key];
+        
+        const elTag = document.getElementById('dash-routine-tag');
+        if(!elTag) return;
+
+        elTag.textContent = dayPlan.tag.toUpperCase();
+        
+        const now = new Date();
+        const currentMins = now.getHours() * 60 + now.getMinutes();
+        
+        let nextBlock = null;
+        for(let b of dayPlan.blocks) {
+            const blockMins = parseTime(b.time);
+            // find next block that is after current time OR if it's past 10PM, find next block (maybe next day's first block, but for now just today)
+            if(blockMins > currentMins && !completedBlocks.has(b.id)) {
+                nextBlock = b;
+                break;
+            }
+        }
+        
+        if(nextBlock) {
+            document.getElementById('dash-routine-next').textContent = "UP NEXT: " + nextBlock.title.toUpperCase();
+        } else {
+            document.getElementById('dash-routine-next').textContent = "ALL CAUGHT UP!";
+        }
+        
+        const pct = Math.round((completedBlocks.size / dayPlan.blocks.length) * 100) || 0;
+        document.getElementById('dash-routine-bar').style.width = pct + '%';
+        document.getElementById('dash-routine-meta').textContent = `${completedBlocks.size} / ${dayPlan.blocks.length} BLOCKS COMPLETED`;
+    }
+
+    setInterval(updateRoutineDashboard, 60000);
+
+    function requestNotificationPermission() {
+        if ("Notification" in window) {
+            Notification.requestPermission().then(permission => {
+                if(permission === "granted") {
+                    console.log("Notifications granted");
+                }
+            });
+        }
+    }
+
+    function checkNotifications() {
+        if (!("Notification" in window) || Notification.permission !== "granted") return;
+        
+        const key = getTodayKey();
+        const dayPlan = WEEKLY_ROUTINE[key];
+        const now = new Date();
+        const currentMins = now.getHours() * 60 + now.getMinutes();
+        
+        dayPlan.blocks.forEach(b => {
+            const blockMins = parseTime(b.time);
+            if (blockMins - currentMins === 10 && !completedBlocks.has(b.id)) {
+                new Notification(`UPCOMING: ${b.title}`, {
+                    body: b.subtitle || `Starts at ${b.time}.`,
+                    icon: './forgewhitee.png'
+                });
+            }
+        });
+    }
+
+    setInterval(checkNotifications, 60000);
+
     window.addEventListener('load', async () => {
       const saved = localStorage.getItem('arch_wb');
       setTimeout(() => {
@@ -5464,6 +6300,8 @@
               if (currentUser) {
                 toggleAuthGate(false);
                 await loadFromSupabase();
+                loadRoutineLog();
+                requestNotificationPermission();
               } else {
                 WB = buildStarterWB();
                 parseWB(WB);
@@ -5488,6 +6326,8 @@
           updateTimerPrimaryButton(false);
           updateTimerDisplay(getTimerInputMs());
           renderDash();
+          renderRoutine();
+          updateRoutineDashboard();
           renderRunScreen();
 
           document.getElementById('loading').classList.add('gone');
