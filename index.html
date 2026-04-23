@@ -234,9 +234,7 @@
     }
 
     .wind-down .pcard,
-    .wind-down .routine-dashboard-card,
-    .wind-down .bnav,
-    .wind-down .topbar {
+    .wind-down .routine-dashboard-card {
       filter: grayscale(0.8);
     }
 
@@ -2802,6 +2800,7 @@
         <div class="timeline-list" id="routine-timeline">
           <!-- Populated by JS -->
         </div>
+        <button class="sbtn" style="margin-top:20px; margin-bottom: 20px" onclick="openAdherenceModal()"><i class="fa-solid fa-fire"></i> VIEW ADHERENCE HISTORY</button>
       </div>
     </div>
 
@@ -3077,6 +3076,10 @@
           <div class="srow"><span class="slbl">Training Days</span><span class="sval" id="wp-tdays">—</span></div>
           <div class="srow"><span class="slbl">Rest Days</span><span class="sval" id="wp-rdays">—</span></div>
           <div class="srow"><span class="slbl">Sets Logged</span><span class="sval" id="wp-sets">—</span></div>
+        </div>
+        <div class="fb" id="weight-trend-container" style="display:none">
+          <span class="flbl">BODY WEIGHT TREND</span>
+          <canvas id="weight-trend-canvas" width="300" height="150" style="width:100%;height:150px;margin-top:10px;"></canvas>
         </div>
         <div class="fb">
           <span class="flbl">DAILY BREAKDOWN</span>
@@ -3370,6 +3373,18 @@
       </div>
     </div>
 
+    <!-- Adherence History Modal -->
+    <div class="modal-overlay" id="adherence-modal">
+      <div class="modal-content" style="max-width: 400px; text-align: left;">
+        <div class="h1b" style="font-size:24px;margin-bottom:8px">ADHERENCE HISTORY</div>
+        <div class="desc" style="margin-bottom:16px;">Blocks completed over the last 30 days.</div>
+        <div id="adherence-grid" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-bottom: 24px;">
+          <!-- Heatmap blocks -->
+        </div>
+        <button class="sbtn" onclick="closeAdherenceModal()">CLOSE</button>
+      </div>
+    </div>
+
     <div class="modal-overlay" id="body-stats-modal">
       <div class="modal-content">
         <div class="h1b" style="font-size:32px;margin-bottom:8px">WEEKLY STATS</div>
@@ -3490,7 +3505,7 @@
     let runPreviewRow = null;
     let runPausedAccumMs = 0;
     let runPauseBeganAt = null;
-    const APP_VERSION = '4.1';
+    const APP_VERSION = '4.2';
     const WORKOUT_PLAN = {
       "push": [
         {
@@ -4433,7 +4448,14 @@
       renderRoutine();
       updateRoutineDashboard();
       if (s === 'record-calorie') { updateCalClock(); }
-      if (s === 'record-workout') { updateWorkoutMeta(); }
+      if (s === 'record-workout') {
+        updateWorkoutMeta();
+        if (!aPlan || aPlan.length === 0) {
+          const d = dow(TODAY).toLowerCase();
+          const splitMap = { monday: 'push', tuesday: 'pull', wednesday: 'legs', thursday: 'cardio', friday: 'push', saturday: 'pull', sunday: 'rest' };
+          if (splitMap[d] && WP[splitMap[d]]) selDay(splitMap[d]);
+        }
+      }
       if (s === 'progress-daily') renderDaily();
       if (s === 'progress-weekly') renderWeekly();
       if (s === 'track-run') renderRunScreen();
@@ -5225,10 +5247,16 @@
       renderDaily();
     }
     async function submitCal() {
-      if (!calVal || parseInt(calVal) === 0) { toast('ENTER A VALUE', false, true); return; }
-      const k = parseInt(calVal, 10);
+      const kcalInput = document.getElementById('cal-input-kcal').value;
+      const proInput = document.getElementById('cal-input-pro').value;
+      
+      if (!kcalInput || parseInt(kcalInput) === 0) { toast('ENTER A KCAL VALUE', false, true); return; }
+      const k = parseInt(kcalInput, 10);
+      const p = proInput ? parseInt(proInput, 10) : 0;
+      
       const id = DB.calLog.length ? Math.max(...DB.calLog.map(r => r.ID || 0)) + 1 : 1;
-      const row = { ID: id, Date: TODAY, Day: dow(TODAY), Course: selCourseVal, Calories_kcal: k, Timestamp: nowTime(), Location: 'Home Office', Notes: '' };
+      const row = { ID: id, Date: TODAY, Day: dow(TODAY), Course: selCourseVal, Calories_kcal: k, Protein_g: p, Timestamp: nowTime(), Location: 'Home Office', Notes: '' };
+      
       try {
         await insertCalorieRow(row);
       } catch (e) {
@@ -5245,7 +5273,9 @@
       }
 
       toast(selCourseVal.toUpperCase() + ': ' + fmt(k) + ' KCAL LOGGED', true);
-      calVal = ''; updCalDisp();
+      document.getElementById('cal-input-kcal').value = '';
+      document.getElementById('cal-input-pro').value = '';
+      updCalDisp();
       setTimeout(() => go('dashboard'), 900);
     }
 
@@ -6428,8 +6458,10 @@
       const wkEl = document.getElementById('dp-m-wk');
       wkEl.innerHTML = wks > 0 ? `<span class="tag g">DONE (${wks} sets)</span>` : `<span class="tag">NOT YET</span>`;
       const meals = DB.calLog.filter(r => r.Date === TODAY);
-      document.getElementById('dp-meals').innerHTML = meals.length ? meals.map(m => `
-    <div class="mrow"><div class="minfo"><div class="mname">${m.Course}</div><div class="mtime">${m.Timestamp || '—'}</div>${renderMealSubtext(m.Notes)}</div><div class="mtools"><div class="mcals">${fmt(m.Calories_kcal)} kcal</div><button class="icon-btn" onclick="deleteMeal(${m.ID})" title="Delete meal"><i class="fa-solid fa-trash"></i></button></div></div>`).join('')
+      document.getElementById('dp-meals').innerHTML = meals.length ? meals.map(m => {
+        const pText = m.Protein_g ? `Protein: ${m.Protein_g}g` : '';
+        return `<div class="mrow"><div class="minfo"><div class="mname">${m.Course || m.Meal || 'Meal'}</div><div class="mtime">${m.Timestamp || '—'}</div>${renderMealSubtext(pText || m.Notes)}</div><div class="mtools"><div class="mcals">${fmt(m.Calories_kcal)} kcal</div><button class="icon-btn" onclick="deleteMeal(${m.ID})" title="Delete meal"><i class="fa-solid fa-trash"></i></button></div></div>`;
+      }).join('')
         : `<div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);padding:10px 0">No meals logged today.</div>`;
     }
 
@@ -6464,6 +6496,78 @@
       <div style="display:flex;align-items:center;gap:8px">${tr ? '<span class="tag g">GYM</span>' : ''}<span class="sval">${c ? p + '%' : '—'}</span></div>
     </div>`;
       }).join('');
+      renderWeightChart();
+    }
+
+    async function renderWeightChart() {
+      const container = document.getElementById('weight-trend-container');
+      const canvas = document.getElementById('weight-trend-canvas');
+      if (!HAS_SUPABASE || !currentUser) {
+        container.style.display = 'none';
+        return;
+      }
+      
+      const { data, error } = await supabaseClient
+        .from('body_stats')
+        .select('date, weight_kg')
+        .eq('user_id', currentUser.id)
+        .order('date', { ascending: true })
+        .limit(10);
+        
+      if (error || !data || data.length === 0) {
+        container.style.display = 'none';
+        return;
+      }
+      
+      container.style.display = 'block';
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      const w = canvas.width;
+      const h = canvas.height;
+      const pad = 20;
+      
+      const weights = data.map(d => parseFloat(d.weight_kg)).filter(v => !isNaN(v));
+      if(weights.length < 2) {
+        ctx.fillStyle = '#555';
+        ctx.font = '12px "Space Mono"';
+        ctx.fillText('Not enough data', w/2 - 45, h/2);
+        return;
+      }
+      
+      const minW = Math.min(...weights) - 2;
+      const maxW = Math.max(...weights) + 2;
+      const range = maxW - minW;
+      
+      ctx.beginPath();
+      ctx.strokeStyle = '#c8ff00';
+      ctx.lineWidth = 2;
+      
+      data.forEach((d, i) => {
+        const val = parseFloat(d.weight_kg);
+        const x = pad + (i / (data.length - 1)) * (w - pad * 2);
+        const y = h - pad - ((val - minW) / range) * (h - pad * 2);
+        
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      
+      ctx.fillStyle = '#fff';
+      ctx.font = '10px "Space Mono"';
+      data.forEach((d, i) => {
+        const val = parseFloat(d.weight_kg);
+        const x = pad + (i / (data.length - 1)) * (w - pad * 2);
+        const y = h - pad - ((val - minW) / range) * (h - pad * 2);
+        
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        if (i === 0 || i === data.length - 1) {
+          ctx.fillText(val.toFixed(1), x - 10, y - 10);
+        }
+      });
     }
 
     function renderDB() {
@@ -6831,6 +6935,48 @@
       const pct = Math.round((completedBlocks.size / dayPlan.blocks.length) * 100) || 0;
       document.getElementById('dash-routine-bar').style.width = pct + '%';
       document.getElementById('dash-routine-meta').textContent = `${completedBlocks.size} / ${dayPlan.blocks.length} BLOCKS COMPLETED`;
+    }
+
+    async function openAdherenceModal() {
+      if (!currentUser || !HAS_SUPABASE) { toast('Log in to view adherence history.', false, true); return; }
+      document.getElementById('adherence-modal').classList.add('show');
+      const container = document.getElementById('adherence-grid');
+      container.innerHTML = '<div style="color:var(--text2);font-size:12px;grid-column:1/-1;text-align:center;">Loading...</div>';
+      
+      const getPastDate = (daysAgo) => {
+        const d = new Date(TODAY + 'T12:00:00');
+        d.setDate(d.getDate() - daysAgo);
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      };
+      
+      const { data, error } = await supabaseClient
+        .from('routine_log')
+        .select('date')
+        .eq('user_id', currentUser.id)
+        .gte('date', getPastDate(29))
+        .lte('date', TODAY);
+        
+      if (error) {
+        container.innerHTML = '<div style="color:var(--red);font-size:12px;grid-column:1/-1;text-align:center;">Failed to load data.</div>';
+        return;
+      }
+      
+      const counts = {};
+      (data || []).forEach(r => counts[r.date] = (counts[r.date] || 0) + 1);
+      
+      let html = '';
+      for (let i = 29; i >= 0; i--) {
+        const d = getPastDate(i);
+        const c = counts[d] || 0;
+        let opacity = 0.1;
+        if (c > 0) opacity = Math.min(0.2 + (c * 0.1), 1.0);
+        html += `<div title="${d}: ${c} blocks" style="width: 100%; aspect-ratio: 1; border-radius: 4px; background: var(--green); opacity: ${opacity};"></div>`;
+      }
+      container.innerHTML = html;
+    }
+    
+    function closeAdherenceModal() {
+      document.getElementById('adherence-modal').classList.remove('show');
     }
 
     setInterval(updateRoutineDashboard, 60000);
