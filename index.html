@@ -472,8 +472,15 @@
       flex: 1;
       overflow-y: auto;
       overflow-x: hidden;
-      padding: 0 20px calc(var(--nav-h) + 20px);
+      padding: 0 20px 0;
       scrollbar-width: none
+    }
+
+    .scroll::after {
+      content: "";
+      display: block;
+      min-height: calc(var(--nav-h) + 40px);
+      flex-shrink: 0;
     }
 
     .scroll::-webkit-scrollbar {
@@ -2134,7 +2141,7 @@
 
     .sethdr {
       display: grid;
-      grid-template-columns: 30px 1fr 76px 68px;
+      grid-template-columns: 30px 1fr 64px 56px 32px;
       gap: 8px;
       padding: 7px 16px;
       font-family: 'Space Mono', monospace;
@@ -2162,7 +2169,7 @@
 
     .setrow {
       display: grid;
-      grid-template-columns: 30px 1fr 76px 68px;
+      grid-template-columns: 30px 1fr 64px 56px 32px;
       gap: 8px;
       padding: 9px 16px;
       align-items: center;
@@ -2746,6 +2753,14 @@
       letter-spacing: 2px;
       text-transform: uppercase
     }
+    @keyframes borderPulse {
+      0% { box-shadow: inset 0 0 0 0 rgba(200, 255, 0, 0); }
+      50% { box-shadow: inset 0 0 0 6px rgba(200, 255, 0, 0.9); }
+      100% { box-shadow: inset 0 0 0 0 rgba(200, 255, 0, 0); }
+    }
+    .pulse-border {
+      animation: borderPulse 1s infinite;
+    }
   </style>
 </head>
 
@@ -2836,22 +2851,20 @@
           </div>
         </div>
 
-        <div class="pcard">
-          <div class="ghost dashboard-ghost">01</div>
-          <div class="pcard-lbl">DAILY PROGRESS</div>
-          <div class="pcard-sub">METRIC SYNC: ACTIVE</div>
-          <div class="prow">
-            <div>
-              <div class="big-pct" id="d-pct">—%</div>
-              <div class="pct-lbl">COMPLETION RATE • <span id="d-pct-cals">0 KCAL</span> &bull; <span id="d-pct-pro"
-                  style="color:var(--forge-teal)">0g PRO</span></div>
+        <div class="pcard" onclick="go('record-calorie')" style="cursor: pointer; position: relative;">
+          <div class="pcard-lbl">DAILY PROTEIN</div>
+          <div class="pcard-sub" style="margin-bottom: 16px;">TARGET: 150g</div>
+          <div style="position: relative; width: 140px; height: 140px; margin: 0 auto 10px;">
+            <svg width="140" height="140" viewBox="0 0 140 140" style="transform: rotate(-90deg);">
+              <circle cx="70" cy="70" r="60" fill="none" stroke="var(--surface3)" stroke-width="12" />
+              <circle cx="70" cy="70" r="60" fill="none" stroke="var(--text3)" stroke-width="12" 
+                stroke-dasharray="377" stroke-dashoffset="377" stroke-linecap="round" 
+                style="transition: stroke-dashoffset 1s ease-out, stroke 0.5s ease;" id="dash-pro-ring" />
+            </svg>
+            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <span style="font-family: 'Bebas Neue', sans-serif; font-size: 42px; color: var(--text); line-height: 1;" id="dash-pro-val">0g</span>
+              <span style="font-family: 'Space Mono', monospace; font-size: 10px; color: var(--text3);">/ 150g</span>
             </div>
-            <div class="ring-btn" onclick="go('progress-daily')">
-              <i class="fa-solid fa-bolt"></i>
-            </div>
-          </div>
-          <div class="bar-track">
-            <div class="bar-fill" id="d-bar" style="width:0"></div>
           </div>
         </div>
         <div class="mgrid">
@@ -2885,7 +2898,7 @@
         <div class="brand"><img src="./forgewhitee.png" alt="FORGE" class="brand-logo"></div>
         <div style="width:36px"></div>
       </div>
-      <div class="scroll" style="padding:0 16px calc(var(--nav-h) + 8px)">
+      <div class="scroll" style="padding:0 16px 0">
         <div class="phase">PHASE 01</div>
         <div class="h1b" style="font-size:42px;margin-bottom:4px">LOG DATA.</div>
         <div class="desc" style="margin-bottom:14px;font-size:12px">Precision tracking for metabolic optimization. Input
@@ -2992,20 +3005,6 @@
       <div class="scroll">
         <div class="phase">DASHBOARD_02</div>
         <div class="h1b">DAILY<br>PROGRESS.</div>
-
-        <div class="routine-dashboard-card" onclick="go('today-routine')">
-          <div class="ghost dashboard-ghost" style="font-size:60px; right:10px; top:10px;"><i
-              class="fa-solid fa-calendar-day"></i></div>
-          <div class="pcard-lbl">TODAY'S ROUTINE</div>
-          <div class="pcard-sub" id="dash-routine-tag">LOADING...</div>
-          <div
-            style="font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--green); margin-bottom: 4px; line-height: 1"
-            id="dash-routine-next">UP NEXT: --</div>
-          <div style="font-size: 13px; color: var(--text2);" id="dash-routine-meta">-- completed</div>
-          <div class="bar-track" style="margin-top: 12px;">
-            <div class="bar-fill" id="dash-routine-bar" style="width: 0%"></div>
-          </div>
-        </div>
 
         <div class="pcard">
           <div class="ghost" id="dp-ghost">0</div>
@@ -3505,7 +3504,7 @@
     let runPreviewRow = null;
     let runPausedAccumMs = 0;
     let runPauseBeganAt = null;
-    const APP_VERSION = '4.2';
+    const APP_VERSION = '4.3';
     const WORKOUT_PLAN = {
       "push": [
         {
@@ -5408,12 +5407,13 @@
         <div class="setnum">${si + 1}</div><div class="setprev">${findPreviousWeight(e.n, si + 1)}</div>
         <input class="si" type="number" step="0.5" placeholder="kg" inputmode="decimal" value="${s.lbs}" oninput="ss(${i},${si},'lbs',this.value)">
         <input class="si" type="number" placeholder="${e.r.split('–')[0]}" inputmode="decimal" value="${s.reps}" oninput="ss(${i},${si},'reps',this.value)">
+        <button class="icon-btn" onclick="completeSet(${i},${si}, '${e.n}')" style="color:var(--text3);font-size:18px;display:flex;align-items:center;justify-content:center;height:100%;" id="checkbtn-${i}-${si}"><i class="fa-regular fa-circle-check"></i></button>
       </div>
       <button class="setdelete" onclick="deleteSet(${i},${si})">Delete</button>
     </div>`).join('');
       return `<div class="excard" id="ec-${i}">
-    <div class="exhdr"><div class="exmeta"><div class="exname">${e.n}</div><span class="extag">${e.t}</span></div><button class="extrash" onclick="removeExercise(${i})" aria-label="Remove exercise"><i class="fa-solid fa-trash"></i></button></div>
-    <div class="sethdr"><div>SET</div><div>PREV</div><div>KG</div><div>REPS</div></div>
+    <div class="exhdr"><div class="exmeta"><div class="exname">${e.n}</div><span class="extag">${e.t}</span>${getOverloadSuggestion(e.n, e.r) ? `<span class="tag g" style="margin-top:4px;">${getOverloadSuggestion(e.n, e.r)}</span>` : ''}</div><button class="extrash" onclick="removeExercise(${i})" aria-label="Remove exercise"><i class="fa-solid fa-trash"></i></button></div>
+    <div class="sethdr"><div>SET</div><div>PREV</div><div>KG</div><div>REPS</div><div></div></div>
     ${rows}
     <button class="addbtn" onclick="addS(${i},'${e.r}')"><i class="fa-solid fa-plus"></i>ADD SET</button>
   </div>`;
@@ -5425,9 +5425,10 @@
       const si = aSets[ei].length - 1, ph = rStr.split('–')[0];
       document.getElementById('ec-' + ei).querySelector('.addbtn').insertAdjacentHTML('beforebegin',
         `<div class="setswipe" id="setswipe-${ei}-${si}" ontouchstart="setSwipeStart(event,${ei},${si})" ontouchmove="setSwipeMove(event,${ei},${si})" ontouchend="setSwipeEnd(event,${ei},${si})"><div class="setrow"><div class="setnum">${si + 1}</div><div class="setprev">${findPreviousWeight(aPlan[ei].n, si + 1)}</div>
-     <input class="si" type="number" step="0.5" placeholder="kg" inputmode="decimal" oninput="ss(${ei},${si},'lbs',this.value)">
-     <input class="si" type="number" placeholder="${ph}" inputmode="decimal" oninput="ss(${ei},${si},'reps',this.value)">
-     </div><button class="setdelete" onclick="deleteSet(${ei},${si})">Delete</button></div>`);
+      <input class="si" type="number" step="0.5" placeholder="kg" inputmode="decimal" oninput="ss(${ei},${si},'lbs',this.value)">
+      <input class="si" type="number" placeholder="${ph}" inputmode="decimal" oninput="ss(${ei},${si},'reps',this.value)">
+      <button class="icon-btn" onclick="completeSet(${ei},${si}, '${aPlan[ei].n}')" style="color:var(--text3);font-size:18px;display:flex;align-items:center;justify-content:center;height:100%;" id="checkbtn-${ei}-${si}"><i class="fa-regular fa-circle-check"></i></button>
+      </div><button class="setdelete" onclick="deleteSet(${ei},${si})">Delete</button></div>`);
     }
     function deleteSet(exerciseIndex, setIndex) {
       if (!aSets[exerciseIndex]) return;
@@ -5435,6 +5436,74 @@
       if (!aSets[exerciseIndex].length) aSets[exerciseIndex] = [{ lbs: '', reps: '' }];
       renderWK(aDay);
     }
+
+    let restEndTime = 0;
+    let restInterval = null;
+
+    function completeSet(ei, si, exName) {
+      const btn = document.getElementById(`checkbtn-${ei}-${si}`);
+      if (btn) {
+        btn.style.color = 'var(--green)';
+        btn.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+      }
+      
+      const compounds = ['bench', 'squat', 'deadlift', 'press', 'row', 'pull-up', 'chin-up'];
+      const isCompound = compounds.some(c => exName.toLowerCase().includes(c));
+      const durationMs = (isCompound ? 90 : 60) * 1000;
+      
+      restEndTime = Date.now() + durationMs;
+      startRestTimer();
+    }
+
+    function startRestTimer() {
+      const overlay = document.getElementById('rest-timer-overlay');
+      const display = document.getElementById('rest-time-display');
+      overlay.style.display = 'flex';
+      
+      if (restInterval) clearInterval(restInterval);
+      document.getElementById('app').classList.remove('pulse-border');
+
+      restInterval = setInterval(() => {
+        const remaining = Math.max(0, restEndTime - Date.now());
+        const secs = Math.ceil(remaining / 1000);
+        const m = Math.floor(secs / 60);
+        const s = secs % 60;
+        display.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        
+        if (secs <= 10 && secs > 0) {
+          document.getElementById('app').classList.add('pulse-border');
+        } else {
+          document.getElementById('app').classList.remove('pulse-border');
+        }
+
+        if (remaining <= 0) {
+          clearInterval(restInterval);
+          playHapticsAndTone();
+          overlay.style.display = 'none';
+          document.getElementById('app').classList.remove('pulse-border');
+        }
+      }, 1000);
+    }
+
+    function stopRestTimer() {
+      if (restInterval) clearInterval(restInterval);
+      document.getElementById('rest-timer-overlay').style.display = 'none';
+      document.getElementById('app').classList.remove('pulse-border');
+    }
+
+    function playHapticsAndTone() {
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        osc.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.3);
+      } catch (e) {}
+    }
+
     function setSwipeStart(event, exerciseIndex, setIndex) {
       const el = document.getElementById(`setswipe-${exerciseIndex}-${setIndex}`);
       if (!el) return;
@@ -6431,10 +6500,22 @@
     }
 
     function renderDash() {
-      const c = todayCals(), p = Math.min(Math.round(c / GOAL * 100), 100);
-      document.getElementById('d-pct').textContent = p + '%';
-      document.getElementById('d-pct-cals').textContent = fmt(c) + ' KCAL';
-      document.getElementById('d-bar').style.width = p + '%';
+      const proSum = DB.calLog.filter(r => r.Date === TODAY).reduce((acc, r) => acc + (parseInt(r.Protein_g) || 0), 0);
+      const targetPro = 150;
+      const proPct = Math.min(proSum / targetPro, 1);
+      
+      const proValEl = document.getElementById('dash-pro-val');
+      const proRingEl = document.getElementById('dash-pro-ring');
+      
+      if (proValEl) proValEl.textContent = proSum + 'g';
+      if (proRingEl) {
+        const circum = 377; // 2 * pi * 60
+        proRingEl.style.strokeDashoffset = circum - (proPct * circum);
+        if (proPct < 0.5) proRingEl.style.stroke = 'var(--text3)';
+        else if (proPct < 0.8) proRingEl.style.stroke = '#facc15'; // yellow
+        else proRingEl.style.stroke = 'var(--green)'; // green
+      }
+
       const tw = weekCals(0), lw = weekCals(-7);
       if (lw > 0) { const ch = Math.round((tw - lw) / lw * 100); document.getElementById('d-wvol').textContent = (ch >= 0 ? '+' : '') + ch + '%'; }
       else document.getElementById('d-wvol').textContent = tw > 0 ? 'NEW WEEK' : '—';
@@ -6909,9 +6990,9 @@
       const dayPlan = WEEKLY_ROUTINE[key];
 
       const elTag = document.getElementById('dash-routine-tag');
-      if (!elTag) return;
-
-      elTag.textContent = dayPlan.tag.toUpperCase();
+      if (elTag) elTag.textContent = dayPlan.tag.toUpperCase();
+      const dpTag = document.getElementById('dp-routine-tag');
+      if (dpTag) dpTag.textContent = dayPlan.tag.toUpperCase();
 
       const now = new Date();
       const currentMins = now.getHours() * 60 + now.getMinutes();
@@ -6919,22 +7000,23 @@
       let nextBlock = null;
       for (let b of dayPlan.blocks) {
         const blockMins = parseTime(b.time);
-        // find next block that is after current time OR if it's past 10PM, find next block (maybe next day's first block, but for now just today)
         if (blockMins > currentMins && !completedBlocks.has(b.id)) {
           nextBlock = b;
           break;
         }
       }
 
-      if (nextBlock) {
-        document.getElementById('dash-routine-next').textContent = "UP NEXT: " + nextBlock.title.toUpperCase();
-      } else {
-        document.getElementById('dash-routine-next').textContent = "ALL CAUGHT UP!";
-      }
+      const nextText = nextBlock ? "UP NEXT: " + nextBlock.title.toUpperCase() : "ALL CAUGHT UP!";
+      if(document.getElementById('dash-routine-next')) document.getElementById('dash-routine-next').textContent = nextText;
+      if(document.getElementById('dp-routine-next')) document.getElementById('dp-routine-next').textContent = nextText;
 
       const pct = Math.round((completedBlocks.size / dayPlan.blocks.length) * 100) || 0;
-      document.getElementById('dash-routine-bar').style.width = pct + '%';
-      document.getElementById('dash-routine-meta').textContent = `${completedBlocks.size} / ${dayPlan.blocks.length} BLOCKS COMPLETED`;
+      if(document.getElementById('dash-routine-bar')) document.getElementById('dash-routine-bar').style.width = pct + '%';
+      if(document.getElementById('dp-routine-bar')) document.getElementById('dp-routine-bar').style.width = pct + '%';
+      
+      const metaText = `${completedBlocks.size} / ${dayPlan.blocks.length} BLOCKS COMPLETED`;
+      if(document.getElementById('dash-routine-meta')) document.getElementById('dash-routine-meta').textContent = metaText;
+      if(document.getElementById('dp-routine-meta')) document.getElementById('dp-routine-meta').textContent = metaText;
     }
 
     async function openAdherenceModal() {
