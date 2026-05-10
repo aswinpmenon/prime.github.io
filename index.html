@@ -53,6 +53,13 @@
 <!-- ═══════════════════════════════════════════════ APP ════════ -->
 <div id="app">
 
+  <!-- Ambient gradient orbs -->
+  <div class="ambient-orbs" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
   <!-- ─── HOME SCREEN ──────────────────────────────────────── -->
   <div class="screen active" id="screen-home">
     <div class="screen-hdr">
@@ -72,15 +79,15 @@
     <div class="scroll" id="home-scroll">
 
       <!-- Today overview card -->
-      <div class="card card-lg" style="margin-top:4px">
+      <div class="hero-card" style="margin-top:4px">
         <div class="rings-wrap">
           <!-- Calories ring -->
           <div class="ring-svg-wrap">
             <svg class="ring-svg" width="160" height="160" viewBox="0 0 160 160">
-              <circle class="ring-track" cx="80" cy="80" r="70" stroke="var(--s3)"/>
+              <circle class="ring-track" cx="80" cy="80" r="70"/>
               <circle class="ring-fill" id="ring-cal" cx="80" cy="80" r="70"
                 stroke="var(--amber)" stroke-dasharray="439.82 439.82" stroke-dashoffset="439.82"/>
-              <circle class="ring-track" cx="80" cy="80" r="54" stroke="var(--s3)"/>
+              <circle class="ring-track" cx="80" cy="80" r="54"/>
               <circle class="ring-fill" id="ring-work" cx="80" cy="80" r="54"
                 stroke="var(--blue)" stroke-dasharray="339.29 339.29" stroke-dashoffset="339.29"/>
             </svg>
@@ -146,7 +153,7 @@
       </div>
 
       <!-- Routine adherence strip -->
-      <div class="card" style="padding:12px 14px" id="routine-strip-card">
+      <div class="card card-dark" style="padding:14px 16px" id="routine-strip-card">
         <div class="flex-between mb-8">
           <div style="font-size:13px;font-weight:600">Today's Routine</div>
           <button style="font-size:12px;color:var(--lime)" onclick="navTo('stats');showRoutineTab()">View all</button>
