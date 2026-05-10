@@ -280,7 +280,12 @@ async function deleteCalorieRow(id) {
 }
 async function insertWorkoutRow(row) {
   if (supabaseClient && currentUser) {
-    await supabaseClient.from('workout_log').insert({ ...row, user_id: currentUser.id });
+    await supabaseClient.from('workout_log').insert({ ...row, user_id: currentUser.id }).catch(()=>{});
+  }
+}
+async function updateWorkoutRowField(id, field, val) {
+  if (supabaseClient && currentUser) {
+    await supabaseClient.from('workout_log').update({ [field]: val }).eq('ID', id).eq('user_id', currentUser.id).catch(()=>{});
   }
 }
 async function deleteWorkoutRow(id) {
@@ -399,10 +404,7 @@ function renderHome() {
   // Recent activity
   renderRecentActivity();
 
-  // AI coach (from cache)
-  const cached = localStorage.getItem('coach_feedback_'+TODAY);
-  if (cached) document.getElementById('coach-feedback-home').textContent = cached;
-  else fetchDailyCoachQuiet();
+  // AI coach home element no longer rendered
 }
 
 function renderRecentActivity() {
@@ -865,27 +867,33 @@ function renderExerciseList(split) {
   const wrap = document.getElementById('exercise-list');
   wrap.innerHTML = exercises.map((ex,ei) => {
     const sets = DB.workoutLog.filter(r=>r.Date===TODAY && r.Exercise===ex.name && r.Split_Name===split);
+    // Find last session entry for this exercise (different date)
+    const lastSessionSet = DB.workoutLog.filter(r=>r.Date!==TODAY && r.Exercise===ex.name).slice(-1)[0];
+    const prevTxt = lastSessionSet
+      ? `${lastSessionSet.Weight_lbs||0}kg × ${lastSessionSet.Reps||0}`
+      : '—';
     return `
       <div class="ex-card" id="ex-card-${ei}">
         <div class="ex-hdr">
-          <div>
+          <div style="flex:1;min-width:0">
             <div class="ex-name">${esc(ex.name)}</div>
-            <div style="display:flex;gap:6px;margin-top:4px">
+            <div style="display:flex;gap:6px;margin-top:4px;align-items:center">
               <span class="ex-tag">${ex.target}</span>
+              <span style="font-size:10px;color:var(--t3)">prev: ${prevTxt}</span>
             </div>
-            <div class="ex-note" style="margin-top:4px">${esc(ex.note)}</div>
+            <div class="ex-note" style="margin-top:3px">${esc(ex.note)}</div>
           </div>
-          <button class="ex-del-btn" onclick="openTimerSheet()" title="Rest timer">
+          <button class="ex-del-btn" onclick="openTimerSheet()" title="Rest timer" style="margin-left:8px">
             <i class="fa-solid fa-stopwatch"></i>
           </button>
         </div>
-        <div class="set-hdr"><span>#</span><span>Previous</span><span>Weight</span><span>Reps</span><span></span></div>
+        <div class="set-hdr"><span>#</span><span>kg</span><span>reps</span><span></span><span></span></div>
         ${sets.map((s,si) => `
           <div class="set-row">
             <div class="set-num done">${si+1}</div>
-            <div style="font-size:12px;color:var(--t2)">${s.Weight_lbs||0}lb × ${s.Reps||0}</div>
-            <input class="set-input" type="number" placeholder="lbs" value="${s.Weight_lbs||''}" onchange="updateSet(${s.ID},'Weight_lbs',this.value)">
-            <input class="set-input" type="number" placeholder="reps" value="${s.Reps||''}" onchange="updateSet(${s.ID},'Reps',this.value)">
+            <input class="set-input" type="number" inputmode="decimal" placeholder="kg" value="${s.Weight_lbs||''}" onchange="updateSet(${s.ID},'Weight_lbs',this.value)" onclick="this.select()">
+            <input class="set-input" type="number" inputmode="numeric" placeholder="reps" value="${s.Reps||''}" onchange="updateSet(${s.ID},'Reps',this.value)" onclick="this.select()">
+            <span></span>
             <button class="set-del" onclick="deleteWorkoutSet(${s.ID})"><i class="fa-solid fa-xmark"></i></button>
           </div>`).join('')}
         <button class="add-set-btn" onclick="addSet('${esc(ex.name)}','${split}',${ei})">
@@ -893,7 +901,6 @@ function renderExerciseList(split) {
         </button>
       </div>`;
   }).join('');
-  // Timer reminder
   wrap.innerHTML += `<div style="height:20px"></div>`;
 }
 
@@ -922,7 +929,11 @@ async function addSet(exName, split, exIdx) {
 }
 function updateSet(id, field, val) {
   const row = DB.workoutLog.find(r=>r.ID===id);
-  if (row) { row[field] = field==='Reps' ? parseInt(val,10)||0 : parseFloat(val)||0; saveLocalDB() }
+  if (!row) return;
+  const parsed = field==='Reps' ? parseInt(val,10)||0 : parseFloat(val)||0;
+  row[field] = parsed;
+  saveLocalDB();
+  updateWorkoutRowField(id, field, parsed);
 }
 async function deleteWorkoutSet(id) {
   await deleteWorkoutRow(id);
@@ -1040,7 +1051,7 @@ function renderBodyStats() {
   const logEl = document.getElementById('body-weight-log');
   if (logEl) {
     logEl.innerHTML = log.slice().reverse().slice(0,20).map(r=>`
-      <div class="flex-between" style="padding:9px 0;border-bottom:1px solid var(--b1)">
+      <div class="flex-between" style="padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.06)">
         <div style="font-size:14px">${formatDate(r.Date)}</div>
         <div style="font-size:14px;font-weight:600">${fmtDecimal(r.Weight_kg)} kg</div>
       </div>`).join('') || `<div style="font-size:13px;color:var(--t2);text-align:center;padding:12px">No weigh-ins yet</div>`;
@@ -1228,7 +1239,7 @@ async function stopRun() {
 function toggleGPS() {
   runGpsEnabled = !runGpsEnabled;
   const btn = document.getElementById('gps-toggle-btn');
-  if (btn) btn.style.color = runGpsEnabled ? 'var(--lime)' : 'var(--t3)';
+  if (btn) btn.style.color = runGpsEnabled ? 'var(--red)' : 'var(--t3)';
   toast('GPS '+(runGpsEnabled?'on':'off'), true);
 }
 
@@ -1270,7 +1281,7 @@ function renderWeekStats() {
     </div>`;
   }).join('');
   if (calLabelEl) calLabelEl.innerHTML = dayData.map(dd=>
-    `<div style="flex:1;text-align:center;font-size:9px;color:${dd.d===TODAY?'var(--lime)':'var(--t3)'}">${dow(dd.d)}</div>`
+    `<div style="flex:1;text-align:center;font-size:9px;color:${dd.d===TODAY?'var(--red)':'var(--t3)'}">${dow(dd.d)}</div>`
   ).join('');
 
   // Workout bar chart
@@ -1723,7 +1734,7 @@ function swipeEnd(e, id) { swipeEl=null }
 function spawnConfetti() {
   const layer = document.getElementById('confetti-layer');
   if (!layer) return;
-  const colors = ['#B8FF00','#4DA8FF','#FF5FA8','#FFB347','#00FFBF'];
+  const colors = ['#FF2D2D','#FF6060','#FF9090','#FFAAAA','#FF4040'];
   for (let i=0;i<40;i++) {
     const p = document.createElement('div');
     p.className = 'confetti-piece';
